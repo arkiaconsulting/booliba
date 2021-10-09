@@ -1,0 +1,107 @@
+name: Api PR
+
+on: 
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  app-name: myapp
+  rg-name: myRg
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      cosmosdb:
+        options: --name cosmosdb
+        image: mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest
+        ports:
+          - 8081:8081
+          - 10251:10251
+          - 10252:10252
+          - 10253:10253
+          - 10254:10254
+        env:
+          AZURE_COSMOS_EMULATOR_PARTITION_COUNT: 5
+          AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE: "true"
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0.x'
+          include-prerelease: true
+
+      - name: Build
+        run: dotnet build Booliba.sln --configuration 'Release Api'
+        working-directory: src/services
+
+      - name: Wait for Cosmos
+        run: |
+          echo "Waiting for Cosmos to start..."
+          until [ `docker logs --tail 1 cosmosdb | tr -d '\r\n' | grep '^Started$'` ]; do printf '.'; sleep 2; done
+          echo "It's up !"
+
+      - name: Unit tests
+        run: dotnet test Api.Tests/Tests.csproj --no-restore --collect "XPlat Code coverage" --filter Category=Unit
+        working-directory: src/services/Api
+
+      - name: Install Cosmos certificate
+        run: |
+          set -e
+          curl -k https://localhost:8081/_explorer/emulator.pem > emulatorcert.crt
+          sudo cp emulatorcert.crt /usr/local/share/ca-certificates/
+          sudo update-ca-certificates
+
+      - name: Component tests
+        run: dotnet test Api.Tests/Tests.csproj --no-restore --collect "XPlat Code coverage" --filter Category=Component
+        working-directory: src/services/Api
+
+      - name: Publish
+        run: dotnet publish Api/Api.csproj --configuration 'Release Api' -o api
+        working-directory: src/services/Api
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: api
+          path: src/services/Api/api/**
+          if-no-files-found: error
+
+  deploy_api:
+    if: ${{ success() && github.ref == 'refs/heads/main' }}
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: PROD
+      url: ${{ steps.deploywebapp.outputs.webapp-url }}
+
+    steps:
+      - name: Download a Build Artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: api
+          path: api
+      
+      - name: Login via Azure CLI
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # - name: Deploy web app
+      #   id: deploywebapp
+      #   uses: azure/webapps-deploy@v2
+      #   with:
+      #     app-name: ${{ env.app-name }}
+      #     slot-name: staging
+      #     package: api
+
+      - name: az cli logout
+        run: az logout
+
