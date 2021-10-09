@@ -1,9 +1,6 @@
 name: Api PR
 
 on: 
-  push:
-    branches:
-      - main
   pull_request:
     branches:
       - main
@@ -74,14 +71,158 @@ jobs:
           path: src/services/Api/api/**
           if-no-files-found: error
 
+  terraform_plan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.0.7
+
+      - name: Terraform Format
+        id: fmt
+        run: terraform fmt -check
+        working-directory: src/terraform
+
+      - name: Login via Azure CLI
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Prepare Azure environment variables
+        env:
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+        run: |
+          echo "ARM_CLIENT_ID=`echo ${AZURE_CREDENTIALS} | jq -r .clientId`">> $GITHUB_ENV
+          echo "ARM_CLIENT_SECRET=`echo ${AZURE_CREDENTIALS} | jq -r .clientSecret`">> $GITHUB_ENV
+          echo "ARM_SUBSCRIPTION_ID=`echo ${AZURE_CREDENTIALS} | jq -r .subscriptionId`">> $GITHUB_ENV
+          echo "ARM_TENANT_ID=`echo ${AZURE_CREDENTIALS} | jq -r .tenantId`">> $GITHUB_ENV
+
+      - name: Terraform Init
+        id: init
+        run: |
+          terraform init --backend-config=backend.config -no-color
+        working-directory: src/terraform
+
+      - name: Terraform Validate
+        id: validate
+        
+        run: terraform validate -no-color
+        working-directory: src/terraform
+
+      - name: Terraform Plan
+        id: plan
+        run: |
+          terraform plan -detailed-exitcode -no-color
+        working-directory: src/terraform
+        continue-on-error: true
+
+      - name: Update Pull Request
+        uses: actions/github-script@0.9.0
+        if: github.event_name == 'pull_request'
+        env:
+          PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+
+            <details><summary>Show Plan</summary>
+
+            \`\`\`\n
+            ${process.env.PLAN}
+            \`\`\`
+
+            </details>
+
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+
+  terraform_apply:
+    runs-on: ubuntu-latest
+    needs: [ terraform_plan]
+    if: needs.terraform_plan.result == 'success'
+    environment: PROD
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.0.7
+
+      - name: Login via Azure CLI
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Prepare Azure environment variables
+        env:
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+        run: |
+          echo "ARM_CLIENT_ID=`echo ${AZURE_CREDENTIALS} | jq -r .clientId`">> $GITHUB_ENV
+          echo "ARM_CLIENT_SECRET=`echo ${AZURE_CREDENTIALS} | jq -r .clientSecret`">> $GITHUB_ENV
+          echo "ARM_SUBSCRIPTION_ID=`echo ${AZURE_CREDENTIALS} | jq -r .subscriptionId`">> $GITHUB_ENV
+          echo "ARM_TENANT_ID=`echo ${AZURE_CREDENTIALS} | jq -r .tenantId`">> $GITHUB_ENV
+
+      - name: Terraform Init
+        id: init
+        run: |
+          terraform init --backend-config=backend.config -no-color
+        working-directory: src/terraform
+
+      - name: Terraform Apply
+        id: apply
+        run: |
+          terraform apply -no-color -input=false -auto-approve
+        working-directory: src/terraform
+
+      - name: Update Pull Request
+        uses: actions/github-script@0.9.0
+        if: github.event_name == 'pull_request'
+        env:
+          APPLY: "terraform\n${{ steps.apply.outputs.stdout }}"
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Apply 📖\`${{ steps.apply.outcome }}\`
+
+            <details><summary>Show Apply</summary>
+
+            \`\`\`\n
+            ${process.env.APPLY}
+            \`\`\`
+
+            </details>
+
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+
   deploy_api:
-    if: ${{ success() && github.ref == 'refs/heads/main' }}
-    needs: build
+    if: needs.build.result == 'success' && needs.terraform_apply.result == 'success'
+    needs: [build, terraform_apply]
     runs-on: ubuntu-latest
     environment:
       name: PROD
       url: ${{ steps.deploywebapp.outputs.webapp-url }}
-
     steps:
       - name: Download a Build Artifact
         uses: actions/download-artifact@v2
