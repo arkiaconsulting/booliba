@@ -1,0 +1,15 @@
+﻿<SolutionConfiguration>
+  <Settings>
+    <AllowParallelTestExecution>True</AllowParallelTestExecution>
+    <SolutionConfigured>True</SolutionConfigured>
+  </Settings>
+  <EngineModes>
+    <EngineMode>
+      <Name>All except Component</Name>
+      <Settings>
+        <AlignOutOfDateStatusWithImpactStatus>True</AlignOutOfDateStatusWithImpactStatus>
+        <TestsToExecuteAutomatically>(IsImpacted AND DoesNotHaveCategory 'Component')</TestsToExecuteAutomatically>
+      </Settings>
+    </EngineMode>
+  </EngineModes>
+</SolutionConfiguration>
