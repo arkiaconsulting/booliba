@@ -7,4 +7,8 @@
 		<RootNamespace>Booliba.Api</RootNamespace>
 	</PropertyGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\Database\Storage.csproj" />
+	</ItemGroup>
+
 </Project>
