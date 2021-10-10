@@ -21,9 +21,10 @@ resource "azurerm_app_service" "main" {
   https_only          = true
 
   app_settings = {
-    "APP_CONFIG_ENDPOINT" = data.azurerm_app_configuration.common.endpoint
-    "APP_CONFIG_LABEL"    = local.app_config_label
-    "AZURE_CLIENT_ID"     = azurerm_user_assigned_identity.main.client_id
+    "APP_CONFIG_ENDPOINT"      = data.azurerm_app_configuration.common.endpoint
+    "APP_CONFIG_LABEL"         = local.app_config_label
+    "AZURE_CLIENT_ID"          = azurerm_user_assigned_identity.main.client_id
+    "WEBSITE_RUN_FROM_PACKAGE" = "1"
   }
 
   identity {
