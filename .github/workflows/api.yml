@@ -61,7 +61,7 @@ jobs:
         working-directory: src/services/Api
 
       - name: Publish
-        run: dotnet publish Api/Api.csproj --configuration 'Release Api' -o api
+        run: dotnet publish Api/Api.csproj --configuration 'Release Api' -o api --self-contained true --runtime win-x64
         working-directory: src/services/Api
 
       - name: Upload artifact
@@ -80,6 +80,7 @@ jobs:
         uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: 1.0.7
+          terraform_wrapper: false
 
       - name: Terraform Format
         id: fmt
@@ -158,14 +159,15 @@ jobs:
     if: needs.terraform_plan.result == 'success'
     environment: PROD
     outputs:
-      web_app_name: ${{ steps.output.outputs.web_app_name }}
+      tf_output: ${{ steps.output.outputs.json_output }}
     steps:
       - uses: actions/checkout@v2
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
         with:
-          terraform_version: 1.0.7
+          terraform_version: 1.0.8
+          terraform_wrapper: false
 
       - name: Login via Azure CLI
         uses: azure/login@v1
@@ -190,15 +192,15 @@ jobs:
       - name: Terraform Apply
         id: apply
         run: |
+          set -e
           terraform apply -no-color -input=false -auto-approve
         working-directory: src/terraform
 
       - name: Terraform outputs
         id: output
         run: |
-          tfOutput=`terraform output -json`
-          webAppName=`echo ${tfOutput} | jq -r .web_app_name`"
-          echo "::set-output name=web_app_name::${webAppName}"
+          tfoutput="`terraform output -json -no-color | jq -c .`"
+          echo "::set-output name=json_output::${tfoutput}"
         working-directory: src/terraform
 
       - name: az cli logout
@@ -234,8 +236,8 @@ jobs:
             })
 
   deploy_api:
-    if: needs.build.result == 'success' && needs.terraform_apply.result == 'success'
     needs: [build, terraform_apply]
+    if: needs.build.result == 'success' && needs.terraform_apply.result == 'success'
     runs-on: ubuntu-latest
     environment:
       name: PROD
@@ -255,9 +257,27 @@ jobs:
       - name: Deploy web app
         uses: azure/webapps-deploy@v2
         with:
-          app-name: ${{ needs.terraform_apply.outputs.web_app_name }}
+          app-name: ${{ fromJson(needs.terraform_apply.outputs.tf_output).web_app_name.value }}
           package: api
 
       - name: az cli logout
         run: az logout
 
+  api_tests:
+    needs: [ deploy_api, terraform_apply ]
+    if: needs.deploy_api.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0.x'
+          include-prerelease: true
+
+      - name: Api tests
+        run: dotnet test ApiTests/ApiTests.csproj --collect "XPlat Code coverage"
+        working-directory: src/services/Api
+        env:
+          API_BASE_URL: ${{ fromJson(needs.terraform_apply.outputs.tf_output).web_app_base_address.value }}/api/
