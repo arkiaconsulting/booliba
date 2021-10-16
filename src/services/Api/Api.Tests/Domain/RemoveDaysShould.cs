@@ -1,35 +1,24 @@
 ﻿// This code is under Copyright (C) 2021 of Arkia Consulting SAS all right reserved
 
 using AutoFixture;
-using Booliba.ApplicationCore.AddDaysToReport;
 using Booliba.ApplicationCore.AddReport;
-using Booliba.ApplicationCore.Ports;
+using Booliba.ApplicationCore.RemoveDaysFromReport;
 using Booliba.Tests.Fixtures;
 using FluentAssertions;
-using MediatR;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
-using System.Linq;
-using Booliba.ApplicationCore.RemoveDaysFromReport;
 
 namespace Booliba.Tests.Domain
 {
-    [Trait("Category","Unit")]
-    public class RemoveDaysShould
+    [Trait("Category", "Unit")]
+    public class RemoveDaysShould : IClassFixture<TestContext>
     {
-        private IMediator Sut => _host.Services.GetRequiredService<IMediator>();
-        private ICollection<DomainEvent> Events => (_host.Services.GetRequiredService<IEventBus>() as InMemoryEventBus)!.Events;
+        private readonly TestContext _context;
 
-        private readonly IHost _host;
-
-        public RemoveDaysShould() => _host = Host.CreateDefaultBuilder()
-                .ConfigureServices(services => services.AddApplicationCore().AddInMemoryEventBus())
-                .Build();
+        public RemoveDaysShould(TestContext context) => _context = context;
 
         [Theory(DisplayName = "Effectively remove a day from the report"), BoolibaInlineAutoData]
         public async Task Test01(Fixture fixture)
@@ -41,9 +30,9 @@ namespace Booliba.Tests.Domain
                 .With(c => c.DaysToRemove, new[] { dayToRemove })
                 .Create();
 
-            await Sut.Send(removeDaysCommand, CancellationToken.None);
+            await _context.Sut.Send(removeDaysCommand, CancellationToken.None);
 
-            Events.OfType<DaysRemoved>().Should().ContainSingle()
+            _context.Events.OfType<DaysRemoved>().Should().ContainSingle()
                 .Which.Days.Should().ContainSingle()
                 .Which.Should().Be(dayToRemove);
         }
@@ -57,9 +46,9 @@ namespace Booliba.Tests.Domain
                 .With(c => c.DaysToRemove, new[] { fixture.Create<DateOnly>() })
                 .Create();
 
-            await Sut.Send(addDaysCommand, CancellationToken.None);
+            await _context.Sut.Send(addDaysCommand, CancellationToken.None);
 
-            Events.OfType<DaysRemoved>().Should().BeEmpty();
+            _context.Events.OfType<DaysRemoved>().Where(e => e.WorkReportId == workReportAddedEvent.WorkReportId).Should().BeEmpty();
         }
 
         [Theory(DisplayName = "Remove a day that was previously added"), BoolibaInlineAutoData]
@@ -74,9 +63,9 @@ namespace Booliba.Tests.Domain
                 .With(c => c.DaysToRemove, new[] { dayToRemove })
                 .Create();
 
-            await Sut.Send(removeDaysCommand, CancellationToken.None);
+            await _context.Sut.Send(removeDaysCommand, CancellationToken.None);
 
-            Events.OfType<DaysRemoved>().Should().ContainSingle()
+            _context.Events.OfType<DaysRemoved>().Where(e => e.WorkReportId == reportAddedEvent.WorkReportId).Should().ContainSingle()
                 .Which.Days.Should().ContainSingle()
                 .Which.Should().Be(dayToRemove);
         }
@@ -89,7 +78,7 @@ namespace Booliba.Tests.Domain
                 .With(c => c.WorkReportId, workReportId)
                 .Create();
 
-            Events.Add(daysAdded);
+            _context.Events.Add(daysAdded);
 
             return daysAdded;
         }
@@ -98,7 +87,7 @@ namespace Booliba.Tests.Domain
         {
             var workReportAddedEvent = fixture.Create<ReportAdded>();
 
-            Events.Add(workReportAddedEvent);
+            _context.Events.Add(workReportAddedEvent);
 
             return workReportAddedEvent;
         }
