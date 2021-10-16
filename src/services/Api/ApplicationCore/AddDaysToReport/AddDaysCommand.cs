@@ -28,7 +28,7 @@ namespace Booliba.ApplicationCore.AddDaysToReport
 
             if (daysToAdd.Any())
             {
-                await _eventBus.Publish(new DaysAdded(request.WorkReportId, daysToAdd));
+                await _eventBus.Publish(new DaysAdded(request.WorkReportId, daysToAdd), cancellationToken);
             }
 
             return Unit.Value;
