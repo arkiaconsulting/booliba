@@ -10,12 +10,10 @@ using TechTalk.SpecFlow;
 namespace Booliba.ApiTests
 {
     [Binding]
-    public sealed class WorkReportsStepDefinitions : IDisposable
+    public sealed class WorkReportsStepDefinitions
     {
-        private HttpResponseMessage AddWorkReportResponse => _addWorkReportResponse ?? throw new InvalidOperationException("A work report has not been added");
-
         private readonly TestContext _context;
-        private HttpResponseMessage? _addWorkReportResponse;
+        private Guid _workReportId;
 
         public WorkReportsStepDefinitions(TestContext context)
         {
@@ -34,7 +32,8 @@ namespace Booliba.ApiTests
         [When(@"I add my work report")]
         public async Task WhenIAddMyWorkReport()
         {
-            var workReportDto = new WorkReportDto(Guid.NewGuid(), _context.CurrentWorkReport);
+            _workReportId = Guid.NewGuid();
+            var workReportDto = new WorkReportDto(_workReportId, _context.CurrentWorkReport);
 
             using var httpClient = new HttpClient { BaseAddress = _context.ApiBaseUri };
             var httpRequest = new HttpRequestMessage(HttpMethod.Post, "reports")
@@ -42,16 +41,19 @@ namespace Booliba.ApiTests
                 Content = JsonContent.Create(workReportDto)
             };
 
-            _addWorkReportResponse = await httpClient.SendAsync(httpRequest);
+            using var response = await httpClient.SendAsync(httpRequest);
+            response.EnsureSuccessStatusCode();
         }
 
-        [Then(@"I can see that my work report has been saved")]
-        public void ThenICanSeeThatMyReportHasBeenSaved()
+        [Then(@"I can see my work report into the work report list")]
+        public async Task ThenICanSeeThatMyReportHasBeenSavedAsync()
         {
-            AddWorkReportResponse.EnsureSuccessStatusCode();
-        }
+            using var httpClient = new HttpClient { BaseAddress = _context.ApiBaseUri };
+            var httpRequest = new HttpRequestMessage(HttpMethod.Get, "reports");
 
-        public void Dispose() => ((IDisposable?)_addWorkReportResponse)?.Dispose();
+            using var response = await httpClient.SendAsync(httpRequest);
+            response.EnsureSuccessStatusCode();
+        }
     }
 
     internal record WorkReportDto(Guid Id, IEnumerable<DateTimeOffset> Days);
