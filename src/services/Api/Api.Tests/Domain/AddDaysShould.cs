@@ -3,41 +3,31 @@
 using AutoFixture;
 using Booliba.ApplicationCore.AddDaysToReport;
 using Booliba.ApplicationCore.AddReport;
-using Booliba.ApplicationCore.Ports;
 using Booliba.Tests.Fixtures;
 using FluentAssertions;
-using MediatR;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
-using System.Linq;
 
 namespace Booliba.Tests.Domain
 {
-    [Trait("Category","Unit")]
-    public class AddDaysShould
+    [Trait("Category", "Unit")]
+    public class AddDaysShould : IClassFixture<TestContext>
     {
-        private IMediator Sut => _host.Services.GetRequiredService<IMediator>();
-        private ICollection<DomainEvent> Events => (_host.Services.GetRequiredService<IEventBus>() as InMemoryEventBus)!.Events;
+        private readonly TestContext _context;
 
-        private readonly IHost _host;
-
-        public AddDaysShould() => _host = Host.CreateDefaultBuilder()
-                .ConfigureServices(services => services.AddApplicationCore().AddInMemoryEventBus())
-                .Build();
+        public AddDaysShould(TestContext context) => _context = context;
 
         [Theory(DisplayName = "Produce the right event"), BoolibaInlineAutoData]
         public async Task Test01(AddDaysCommand command, Fixture fixture)
         {
             AddWorkReport(command.WorkReportId, fixture);
 
-            await Sut.Send(command, CancellationToken.None);
+            await _context.Sut.Send(command, CancellationToken.None);
 
-            Events.OfType<DaysAdded>().Should().ContainSingle()
+            _context.Events.OfType<DaysAdded>().Where(e => e.WorkReportId == command.WorkReportId).Should().ContainSingle()
                 .Which.Should().BeEquivalentTo(new
                 {
                     Days = command.DaysToAdd
@@ -53,9 +43,9 @@ namespace Booliba.Tests.Domain
                 .With(c => c.DaysToAdd, new[] { workReportAddedEvent.Days.PickRandom() })
                 .Create();
 
-            await Sut.Send(addDaysCommand, CancellationToken.None);
+            await _context.Sut.Send(addDaysCommand, CancellationToken.None);
 
-            Events.Should().ContainSingle();
+            _context.Events.Should().ContainSingle();
         }
 
         [Theory(DisplayName = "Not add the days that already are in the report"), BoolibaInlineAutoData]
@@ -68,9 +58,9 @@ namespace Booliba.Tests.Domain
                 .With(c => c.DaysToAdd, new[] { workReportAddedEvent.Days.PickRandom(), effectivelyNewDay })
                 .Create();
 
-            await Sut.Send(addDaysCommand, CancellationToken.None);
+            await _context.Sut.Send(addDaysCommand, CancellationToken.None);
 
-            Events.OfType<DaysAdded>().Should().ContainSingle()
+            _context.Events.OfType<DaysAdded>().Should().ContainSingle()
                 .Which.Days.Should().ContainSingle()
                 .Which.Should().Be(effectivelyNewDay);
         }
@@ -83,7 +73,7 @@ namespace Booliba.Tests.Domain
                 .With(c => c.WorkReportId, workReportId)
                 .Create();
 
-            Events.Add(workReportAddedEvent);
+            _context.Events.Add(workReportAddedEvent);
 
             return workReportAddedEvent;
         }
@@ -92,7 +82,7 @@ namespace Booliba.Tests.Domain
         {
             var workReportAddedEvent = fixture.Create<ReportAdded>();
 
-            Events.Add(workReportAddedEvent);
+            _context.Events.Add(workReportAddedEvent);
 
             return workReportAddedEvent;
         }
