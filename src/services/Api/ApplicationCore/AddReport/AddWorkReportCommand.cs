@@ -15,7 +15,7 @@ namespace Booliba.ApplicationCore.AddReport
 
         async Task<Unit> IRequestHandler<AddWorkReportCommand, Unit>.Handle(AddWorkReportCommand request, CancellationToken cancellationToken)
         {
-            await _eventBus.Publish(new ReportAdded(request.Id, request.Name, request.Days.Distinct()));
+            await _eventBus.Publish(new ReportAdded(request.Id, request.Name, request.Days.Distinct()), cancellationToken);
 
             return Unit.Value;
         }

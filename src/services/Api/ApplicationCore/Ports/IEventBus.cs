@@ -4,6 +4,6 @@ namespace Booliba.ApplicationCore.Ports
 {
     public interface IEventBus
     {
-        Task Publish(DomainEvent @event);
+        Task Publish(DomainEvent @event, CancellationToken cancellationToken = default);
     }
 }

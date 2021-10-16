@@ -16,7 +16,7 @@ namespace Booliba.Tests.Fixtures
 
         private readonly ICollection<DomainEvent> _events = new HashSet<DomainEvent>();
 
-        Task IEventBus.Publish(DomainEvent @event)
+        Task IEventBus.Publish(DomainEvent @event, CancellationToken cancellationToken)
         {
             _events.Add(@event);
 

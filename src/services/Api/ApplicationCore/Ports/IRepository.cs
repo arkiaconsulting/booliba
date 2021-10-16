@@ -4,6 +4,6 @@ namespace Booliba.ApplicationCore.Ports
 {
     public interface IRepository
     {
-        Task<IEnumerable<DomainEvent>> Load(Guid workReportId, CancellationToken cancellationToken);
+        Task<IEnumerable<DomainEvent>> Load(Guid workReportId, CancellationToken cancellationToken = default);
     }
 }
