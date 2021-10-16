@@ -1,11 +1,9 @@
 ﻿// This code is under Copyright (C) 2021 of Arkia Consulting SAS all right reserved
 
 using AutoFixture;
-using Booliba.ApplicationCore.AddReport;
 using Booliba.ApplicationCore.RemoveWorkReport;
 using Booliba.Tests.Fixtures;
 using FluentAssertions;
-using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,7 +21,7 @@ namespace Booliba.Tests.Domain
         [Theory(DisplayName = "Effectively remove an existing work report"), BoolibaInlineAutoData]
         public async Task Test01(RemoveWorkReportCommand command, Fixture fixture)
         {
-            _ = AddWorkReport(command.WorkReportId, fixture);
+            _ = _context.AddWorkReport(command.WorkReportId, fixture);
             await _context.Sut.Send(command, CancellationToken.None);
 
             _context.Events.OfType<WorkReportRemoved>().Where(e => e.WorkReportId == command.WorkReportId)
@@ -38,20 +36,5 @@ namespace Booliba.Tests.Domain
             _context.Events.OfType<WorkReportRemoved>().Where(e => e.WorkReportId == command.WorkReportId)
                 .Should().BeEmpty();
         }
-
-        #region Private
-
-        private ReportAdded AddWorkReport(Guid workReportId, Fixture fixture)
-        {
-            var workReportAddedEvent = fixture.Build<ReportAdded>()
-                .With(c => c.WorkReportId, workReportId)
-                .Create();
-
-            _context.Events.Add(workReportAddedEvent);
-
-            return workReportAddedEvent;
-        }
-
-        #endregion
     }
 }
