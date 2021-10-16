@@ -31,7 +31,7 @@ namespace Booliba.Tests.Domain
 
             await _context.Sut.Send(removeDaysCommand, CancellationToken.None);
 
-            _context.Events.OfType<DaysRemoved>().Should().ContainSingle()
+            _context.Events(workReportId).OfType<DaysRemoved>().Should().ContainSingle()
                 .Which.Days.Should().ContainSingle()
                 .Which.Should().Be(dayToRemove);
         }
@@ -47,7 +47,7 @@ namespace Booliba.Tests.Domain
 
             await _context.Sut.Send(addDaysCommand, CancellationToken.None);
 
-            _context.Events.OfType<DaysRemoved>().Where(e => e.WorkReportId == workReportId).Should().BeEmpty();
+            _context.Events(workReportId).OfType<DaysRemoved>().Where(e => e.WorkReportId == workReportId).Should().BeEmpty();
         }
 
         [Theory(DisplayName = "Remove a day that was previously added"), BoolibaInlineAutoData]
@@ -64,7 +64,7 @@ namespace Booliba.Tests.Domain
 
             await _context.Sut.Send(removeDaysCommand, CancellationToken.None);
 
-            _context.Events.OfType<DaysRemoved>().Where(e => e.WorkReportId == workReportId).Should().ContainSingle()
+            _context.Events(workReportId).OfType<DaysRemoved>().Where(e => e.WorkReportId == workReportId).Should().ContainSingle()
                 .Which.Days.Should().ContainSingle()
                 .Which.Should().Be(dayToRemove);
         }

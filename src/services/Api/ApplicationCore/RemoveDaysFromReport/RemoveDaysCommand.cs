@@ -22,8 +22,8 @@ namespace Booliba.ApplicationCore.RemoveDaysFromReport
         async Task<Unit> IRequestHandler<RemoveDaysCommand, Unit>.Handle(RemoveDaysCommand request, CancellationToken cancellationToken)
         {
             var events = await _repository.Load(request.WorkReportId, cancellationToken);
-            var reportAddedEvent = events.OfType<ReportAdded>().Where(e => e.WorkReportId == request.WorkReportId).Single();
-            var daysAddedEvents = events.OfType<DaysAdded>().Where(e => e.WorkReportId == request.WorkReportId);
+            var reportAddedEvent = events.OfType<ReportAdded>().Single();
+            var daysAddedEvents = events.OfType<DaysAdded>();
 
             var daysToRemoveEffectively = request.DaysToRemove.Intersect(reportAddedEvent.Days.Concat(daysAddedEvents.SelectMany(e => e.Days)));
 

@@ -24,7 +24,7 @@ namespace Booliba.Tests.Domain
             _ = _context.AddWorkReport(command.WorkReportId, fixture);
             await _context.Sut.Send(command, CancellationToken.None);
 
-            _context.Events.OfType<WorkReportRemoved>().Where(e => e.WorkReportId == command.WorkReportId)
+            _context.Events(command.WorkReportId).OfType<WorkReportRemoved>()
                 .Should().ContainSingle();
         }
 
@@ -33,7 +33,7 @@ namespace Booliba.Tests.Domain
         {
             await _context.Sut.Send(command, CancellationToken.None);
 
-            _context.Events.OfType<WorkReportRemoved>().Where(e => e.WorkReportId == command.WorkReportId)
+            _context.Events(command.WorkReportId).OfType<WorkReportRemoved>()
                 .Should().BeEmpty();
         }
     }
