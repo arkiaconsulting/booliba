@@ -10,5 +10,8 @@ namespace Booliba.Tests.Fixtures
 {
     internal static class TestExtensions
     {
+        public static T PickRandom<T>(this IEnumerable<T> source) =>
+            source.OrderBy(_ => Guid.NewGuid())
+            .First();
     }
 }
