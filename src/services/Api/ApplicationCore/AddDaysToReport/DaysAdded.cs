@@ -4,5 +4,5 @@ using Booliba.ApplicationCore.Ports;
 
 namespace Booliba.ApplicationCore.AddReport
 {
-    public record DaysAdded(Guid WorkReportId, IEnumerable<DateOnly> Days) : DomainEvent;
+    public record DaysAdded(Guid WorkReportId, IEnumerable<DateOnly> Days) : WorkReportEvent(WorkReportId);
 }

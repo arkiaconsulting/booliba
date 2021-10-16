@@ -26,7 +26,7 @@ namespace Booliba.Tests.Domain
         {
             await _context.Sut.Send(command, CancellationToken.None);
 
-            _context.Events.OfType<ReportAdded>().Where(e => e.WorkReportId == command.Id).Should().ContainSingle();
+            _context.Events(command.WorkReportId).OfType<ReportAdded>().Should().ContainSingle();
         }
 
         [Theory(DisplayName = "Handle setting the work days"), BoolibaInlineAutoData]
@@ -34,7 +34,7 @@ namespace Booliba.Tests.Domain
         {
             await _context.Sut.Send(command, CancellationToken.None);
 
-            _context.Events.OfType<ReportAdded>().Where(e => e.WorkReportId == command.Id).Should().ContainSingle()
+            _context.Events(command.WorkReportId).OfType<ReportAdded>().Should().ContainSingle()
                 .Which.Should().BeEquivalentTo(new
                 {
                     command.Days
@@ -46,10 +46,10 @@ namespace Booliba.Tests.Domain
         {
             await _context.Sut.Send(command, CancellationToken.None);
 
-            _context.Events.OfType<ReportAdded>().Where(e => e.WorkReportId == command.Id).Should().ContainSingle()
+            _context.Events(command.WorkReportId).OfType<ReportAdded>().Should().ContainSingle()
                 .Which.Should().BeEquivalentTo(new
                 {
-                    WorkReportId = command.Id
+                    WorkReportId = command.WorkReportId
                 });
         }
 
@@ -64,7 +64,7 @@ namespace Booliba.Tests.Domain
 
             await _context.Sut.Send(command, CancellationToken.None);
 
-            _context.Events.OfType<ReportAdded>().Where(e => e.WorkReportId == command.Id).Should().ContainSingle()
+            _context.Events(command.WorkReportId).OfType<ReportAdded>().Should().ContainSingle()
                 .Which.Days.Should().ContainSingle();
         }
 
@@ -73,7 +73,7 @@ namespace Booliba.Tests.Domain
         {
             await _context.Sut.Send(command, CancellationToken.None);
 
-            _context.Events.Should().ContainSingle()
+            _context.Events(command.WorkReportId).Should().ContainSingle()
                 .Which.Should().BeEquivalentTo(new
                 {
                     WorkReportName = command.Name

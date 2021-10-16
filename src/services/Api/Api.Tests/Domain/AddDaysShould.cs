@@ -27,7 +27,7 @@ namespace Booliba.Tests.Domain
 
             await _context.Sut.Send(command, CancellationToken.None);
 
-            _context.Events.OfType<DaysAdded>().Where(e => e.WorkReportId == command.WorkReportId).Should().ContainSingle()
+            _context.Events(command.WorkReportId).OfType<DaysAdded>().Should().ContainSingle()
                 .Which.Should().BeEquivalentTo(new
                 {
                     Days = command.DaysToAdd
@@ -45,7 +45,7 @@ namespace Booliba.Tests.Domain
 
             await _context.Sut.Send(addDaysCommand, CancellationToken.None);
 
-            _context.Events.Should().ContainSingle();
+            _context.Events(workReportId).Should().ContainSingle();
         }
 
         [Theory(DisplayName = "Not add the days that already are in the report"), BoolibaInlineAutoData]
@@ -60,7 +60,7 @@ namespace Booliba.Tests.Domain
 
             await _context.Sut.Send(addDaysCommand, CancellationToken.None);
 
-            _context.Events.OfType<DaysAdded>().Should().ContainSingle()
+            _context.Events(workReportId).OfType<DaysAdded>().Should().ContainSingle()
                 .Which.Days.Should().ContainSingle()
                 .Which.Should().Be(effectivelyNewDay);
         }

@@ -22,7 +22,7 @@ namespace Booliba.ApplicationCore.RemoveWorkReport
         async Task<Unit> IRequestHandler<RemoveWorkReportCommand, Unit>.Handle(RemoveWorkReportCommand request, CancellationToken cancellationToken)
         {
             var events = await _repository.Load(request.WorkReportId, cancellationToken);
-            if (events.OfType<ReportAdded>().Where(e => e.WorkReportId == request.WorkReportId).Any())
+            if (events.OfType<ReportAdded>().Any())
             {
                 await _eventBus.Publish(new WorkReportRemoved(request.WorkReportId), cancellationToken);
             }

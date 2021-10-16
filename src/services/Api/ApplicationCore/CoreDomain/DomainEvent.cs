@@ -3,4 +3,6 @@
 namespace Booliba.ApplicationCore.Ports
 {
     public abstract record DomainEvent();
+
+    public abstract record WorkReportEvent(Guid WorkReportId) : DomainEvent;
 }

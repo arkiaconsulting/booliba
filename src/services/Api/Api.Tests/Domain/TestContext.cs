@@ -9,13 +9,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Booliba.Tests.Domain
 {
-    public class TestContext
+    public sealed class TestContext
     {
         public IMediator Sut => _host.Services.GetRequiredService<IMediator>();
-        public ICollection<DomainEvent> Events => (_host.Services.GetRequiredService<IEventBus>() as InMemoryEventBus)!.Events;
+        private ICollection<WorkReportEvent> _Events => (_host.Services.GetRequiredService<IEventBus>() as InMemoryEventService)!.Events;
 
         private readonly IHost _host;
 
@@ -24,13 +25,16 @@ namespace Booliba.Tests.Domain
             .ConfigureServices(services => services.AddApplicationCore().AddInMemoryEventBus())
             .Build();
 
+        public IEnumerable<WorkReportEvent> Events(Guid workReportId) =>
+            _Events.Where(e => e.WorkReportId == workReportId);
+
         public (Guid Id, IEnumerable<DateOnly> Days) AddWorkReport(Guid workReportId, Fixture fixture)
         {
             var workReportAddedEvent = fixture.Build<ReportAdded>()
                 .With(c => c.WorkReportId, workReportId)
                 .Create();
 
-            Events.Add(workReportAddedEvent);
+            _Events.Add(workReportAddedEvent);
 
             return (workReportAddedEvent.WorkReportId, workReportAddedEvent.Days);
         }
@@ -39,7 +43,7 @@ namespace Booliba.Tests.Domain
         {
             var workReportAddedEvent = fixture.Create<ReportAdded>();
 
-            Events.Add(workReportAddedEvent);
+            _Events.Add(workReportAddedEvent);
 
             return (workReportAddedEvent.WorkReportId, workReportAddedEvent.Days);
         }
@@ -50,7 +54,7 @@ namespace Booliba.Tests.Domain
                 .With(c => c.WorkReportId, workReportId)
                 .Create();
 
-            Events.Add(daysAdded);
+            _Events.Add(daysAdded);
 
             return daysAdded.Days;
         }

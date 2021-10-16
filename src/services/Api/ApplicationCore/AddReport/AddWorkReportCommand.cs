@@ -5,7 +5,7 @@ using MediatR;
 
 namespace Booliba.ApplicationCore.AddReport
 {
-    public record AddWorkReportCommand(Guid Id, string Name, IEnumerable<DateOnly> Days) : IRequest;
+    public record AddWorkReportCommand(Guid WorkReportId, string Name, IEnumerable<DateOnly> Days) : IRequest;
 
     internal class AddWorkReportCommandHandler : IRequestHandler<AddWorkReportCommand>
     {
@@ -15,7 +15,7 @@ namespace Booliba.ApplicationCore.AddReport
 
         async Task<Unit> IRequestHandler<AddWorkReportCommand, Unit>.Handle(AddWorkReportCommand request, CancellationToken cancellationToken)
         {
-            await _eventBus.Publish(new ReportAdded(request.Id, request.Name, request.Days.Distinct()), cancellationToken);
+            await _eventBus.Publish(new ReportAdded(request.WorkReportId, request.Name, request.Days.Distinct()), cancellationToken);
 
             return Unit.Value;
         }
