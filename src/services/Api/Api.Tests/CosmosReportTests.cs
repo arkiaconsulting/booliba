@@ -2,7 +2,6 @@
 
 using Booliba.Tests.Fixtures;
 using Microsoft.Azure.Cosmos;
-using Microsoft.Azure.Cosmos.Fluent;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
@@ -39,10 +38,7 @@ namespace Booliba.Tests
             _container = await CosmosFixture.CreateReportsContainer(db);
         }
 
-        async Task IAsyncLifetime.DisposeAsync()
-        {
-            await CosmosClient.GetDatabase(_databaseName).DeleteAsync();
-        }
+        async Task IAsyncLifetime.DisposeAsync() => await CosmosClient.GetDatabase(_databaseName).DeleteAsync();
 
         #endregion
     }

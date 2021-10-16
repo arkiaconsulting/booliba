@@ -21,13 +21,10 @@ namespace Booliba.Tests.Fixtures
 
         public void Dispose() => ((IDisposable)CosmosClient).Dispose();
 
-        internal static async Task<Container> CreateReportsContainer(Database database)
+        internal static async Task<Container> CreateReportsContainer(Database database) => (await database.CreateContainerIfNotExistsAsync(new ContainerProperties
         {
-            return (await database.CreateContainerIfNotExistsAsync(new ContainerProperties
-            {
-                Id = "reports",
-                PartitionKeyPath = "/userId"
-            })).Container;
-        }
+            Id = "reports",
+            PartitionKeyPath = "/userId"
+        })).Container;
     }
 }

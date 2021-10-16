@@ -23,7 +23,7 @@ namespace Booliba.Tests.Domain
         [Theory(DisplayName = "Produce the right event"), BoolibaInlineAutoData]
         public async Task Test01(AddDaysCommand command, Fixture fixture)
         {
-            AddWorkReport(command.WorkReportId, fixture);
+            _context.AddWorkReport(command.WorkReportId, fixture);
 
             await _context.Sut.Send(command, CancellationToken.None);
 
@@ -37,10 +37,10 @@ namespace Booliba.Tests.Domain
         [Theory(DisplayName = "Not add the days if they already are in the report"), BoolibaInlineAutoData]
         public async Task Test02(Fixture fixture)
         {
-            var workReportAddedEvent = AddWorkReport(fixture);
+            var (workReportId, initialDays) = _context.AddWorkReport(fixture);
             var addDaysCommand = fixture.Build<AddDaysCommand>()
-                .With(c => c.WorkReportId, workReportAddedEvent.WorkReportId)
-                .With(c => c.DaysToAdd, new[] { workReportAddedEvent.Days.PickRandom() })
+                .With(c => c.WorkReportId, workReportId)
+                .With(c => c.DaysToAdd, new[] { initialDays.PickRandom() })
                 .Create();
 
             await _context.Sut.Send(addDaysCommand, CancellationToken.None);
@@ -51,11 +51,11 @@ namespace Booliba.Tests.Domain
         [Theory(DisplayName = "Not add the days that already are in the report"), BoolibaInlineAutoData]
         public async Task Test03(Fixture fixture)
         {
-            var workReportAddedEvent = AddWorkReport(fixture);
+            var (workReportId, initialDays) = _context.AddWorkReport(fixture);
             var effectivelyNewDay = fixture.Create<DateOnly>();
             var addDaysCommand = fixture.Build<AddDaysCommand>()
-                .With(c => c.WorkReportId, workReportAddedEvent.WorkReportId)
-                .With(c => c.DaysToAdd, new[] { workReportAddedEvent.Days.PickRandom(), effectivelyNewDay })
+                .With(c => c.WorkReportId, workReportId)
+                .With(c => c.DaysToAdd, new[] { initialDays.PickRandom(), effectivelyNewDay })
                 .Create();
 
             await _context.Sut.Send(addDaysCommand, CancellationToken.None);
@@ -64,29 +64,5 @@ namespace Booliba.Tests.Domain
                 .Which.Days.Should().ContainSingle()
                 .Which.Should().Be(effectivelyNewDay);
         }
-
-        #region Private
-
-        private ReportAdded AddWorkReport(Guid workReportId, Fixture fixture)
-        {
-            var workReportAddedEvent = fixture.Build<ReportAdded>()
-                .With(c => c.WorkReportId, workReportId)
-                .Create();
-
-            _context.Events.Add(workReportAddedEvent);
-
-            return workReportAddedEvent;
-        }
-
-        private ReportAdded AddWorkReport(Fixture fixture)
-        {
-            var workReportAddedEvent = fixture.Create<ReportAdded>();
-
-            _context.Events.Add(workReportAddedEvent);
-
-            return workReportAddedEvent;
-        }
-
-        #endregion
     }
 }
