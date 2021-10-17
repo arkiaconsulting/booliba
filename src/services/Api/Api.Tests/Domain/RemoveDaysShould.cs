@@ -1,6 +1,7 @@
 ﻿// This code is under Copyright (C) 2021 of Arkia Consulting SAS all right reserved
 
 using AutoFixture;
+using Booliba.ApplicationCore;
 using Booliba.ApplicationCore.RemoveDaysFromReport;
 using Booliba.Tests.Fixtures;
 using FluentAssertions;
@@ -67,6 +68,14 @@ namespace Booliba.Tests.Domain
             _context.Events(workReportId).OfType<DaysRemoved>().Where(e => e.WorkReportId == workReportId).Should().ContainSingle()
                 .Which.Days.Should().ContainSingle()
                 .Which.Should().Be(dayToRemove);
+        }
+
+        [Theory(DisplayName = "Fail when the report report does not exist"), BoolibaInlineAutoData]
+        public async Task Test04(RemoveDaysCommand command)
+        {
+            Func<Task> t = () => _context.Sut.Send(command, CancellationToken.None);
+
+            await t.Should().ThrowAsync<WorkReportNotFoundException>();
         }
     }
 }

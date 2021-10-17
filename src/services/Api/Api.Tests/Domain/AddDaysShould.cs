@@ -1,6 +1,7 @@
 ﻿// This code is under Copyright (C) 2021 of Arkia Consulting SAS all right reserved
 
 using AutoFixture;
+using Booliba.ApplicationCore;
 using Booliba.ApplicationCore.AddDaysToReport;
 using Booliba.ApplicationCore.AddReport;
 using Booliba.Tests.Fixtures;
@@ -63,6 +64,14 @@ namespace Booliba.Tests.Domain
             _context.Events(workReportId).OfType<DaysAdded>().Should().ContainSingle()
                 .Which.Days.Should().ContainSingle()
                 .Which.Should().Be(effectivelyNewDay);
+        }
+
+        [Theory(DisplayName = "Fail when the report report does not exist"), BoolibaInlineAutoData]
+        public async Task Test04(AddDaysCommand command)
+        {
+            Func<Task> t = () => _context.Sut.Send(command, CancellationToken.None);
+
+            await t.Should().ThrowAsync<WorkReportNotFoundException>();
         }
     }
 }
