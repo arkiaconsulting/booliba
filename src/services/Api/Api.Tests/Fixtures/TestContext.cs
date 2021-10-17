@@ -3,7 +3,7 @@
 using AutoFixture;
 using Booliba.ApplicationCore.AddReport;
 using Booliba.ApplicationCore.Ports;
-using Booliba.Tests.Fixtures;
+using Booliba.ApplicationCore.SendReport;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -11,22 +11,27 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Booliba.Tests.Domain
+namespace Booliba.Tests.Fixtures
 {
     public sealed class TestContext
     {
         public IMediator Sut => _host.Services.GetRequiredService<IMediator>();
+
         private ICollection<WorkReportEvent> _Events => (_host.Services.GetRequiredService<IEventStore>() as InMemoryEventStore)!.Events;
+        private IEnumerable<EmailMessage> _Emails => (_host.Services.GetRequiredService<IEmailNotifier>() as InMemoryEmailNotifier)!.Emails;
 
         private readonly IHost _host;
 
         public TestContext() =>
             _host = Host.CreateDefaultBuilder()
-            .ConfigureServices(services => services.AddApplicationCore().AddInMemoryEventBus())
+            .ConfigureServices(services => services.AddApplicationCore().AddInMemoryEventBus().AddInMemoryEmailNotifier())
             .Build();
 
         public IEnumerable<WorkReportEvent> Events(Guid workReportId) =>
             _Events.Where(e => e.WorkReportId == workReportId);
+
+        public IEnumerable<EmailMessage> Emails(Guid workReportId) =>
+            _Emails.Where(e => e.WorkReportId == workReportId);
 
         public (Guid Id, IEnumerable<DateOnly> Days) AddWorkReport(Guid workReportId, Fixture fixture)
         {
