@@ -1,0 +1,64 @@
+﻿// This code is under Copyright (C) 2021 of Arkia Consulting SAS all right reserved
+
+using AutoFixture;
+using Booliba.ApplicationCore;
+using Booliba.ApplicationCore.RemoveWorkReport;
+using Booliba.ApplicationCore.SendReport;
+using Booliba.Tests.Fixtures;
+using FluentAssertions;
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Xunit;
+
+namespace Booliba.Tests.Domain
+{
+    [Trait("Category", "Unit")]
+    public class SendWorkReportShould : IClassFixture<TestContext>
+    {
+        private readonly TestContext _context;
+
+        public SendWorkReportShould(TestContext context) => _context = context;
+
+        [Theory(DisplayName = "Effectively send an existing work report"), BoolibaInlineAutoData]
+        public async Task Test01(SendWorkReportCommand command, Fixture fixture)
+        {
+            _ = _context.AddWorkReport(command.WorkReportId, fixture);
+
+            await _context.Sut.Send(command, CancellationToken.None);
+
+            _context.Emails(command.WorkReportId)
+                .Should().ContainSingle()
+                .Which.Should().BeEquivalentTo(new
+                {
+                    command.WorkReportId,
+                    command.EmailAddresses
+                });
+        }
+
+        [Theory(DisplayName = "Save the right event"), BoolibaInlineAutoData]
+        public async Task Test02(SendWorkReportCommand command, Fixture fixture)
+        {
+            _ = _context.AddWorkReport(command.WorkReportId, fixture);
+
+            await _context.Sut.Send(command, CancellationToken.None);
+
+            _context.Events(command.WorkReportId).OfType<WorkReportSent>()
+                .Should().ContainSingle()
+                .Which.Should().BeEquivalentTo(new
+                {
+                    command.WorkReportId,
+                    command.EmailAddresses
+                });
+        }
+
+        [Theory(DisplayName = "Fail when the given work report does not exist"), BoolibaInlineAutoData]
+        public async Task Test03(SendWorkReportCommand command)
+        {
+            Func<Task> t = () => _context.Sut.Send(command, CancellationToken.None);
+
+            await t.Should().ThrowAsync<WorkReportNotFoundException>();
+        }
+    }
+}
