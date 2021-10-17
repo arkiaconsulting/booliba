@@ -10,25 +10,23 @@ namespace Booliba.ApplicationCore.AddDaysToReport
 
     internal class AddWorkReportCommandHandler : IRequestHandler<AddDaysCommand>
     {
-        private readonly IEventBus _eventBus;
-        private readonly IRepository _repository;
+        private readonly IEventStore _eventStore;
 
-        public AddWorkReportCommandHandler(IEventBus eventBus, IRepository repository)
+        public AddWorkReportCommandHandler(IEventStore eventStore)
         {
-            _eventBus = eventBus;
-            _repository = repository;
+            _eventStore = eventStore;
         }
 
         async Task<Unit> IRequestHandler<AddDaysCommand, Unit>.Handle(AddDaysCommand request, CancellationToken cancellationToken)
         {
-            var events = await _repository.Load(request.WorkReportId, cancellationToken);
+            var events = await _eventStore.Load(request.WorkReportId, cancellationToken);
             var reportAddedEvent = events.OfType<ReportAdded>().Single();
 
             var daysToAdd = request.DaysToAdd.Except(reportAddedEvent.Days);
 
             if (daysToAdd.Any())
             {
-                await _eventBus.Publish(new DaysAdded(request.WorkReportId, daysToAdd), cancellationToken);
+                await _eventStore.Save(new DaysAdded(request.WorkReportId, daysToAdd), cancellationToken);
             }
 
             return Unit.Value;

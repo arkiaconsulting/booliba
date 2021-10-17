@@ -10,20 +10,20 @@ using System.Threading.Tasks;
 
 namespace Booliba.Tests.Fixtures
 {
-    internal class InMemoryEventService : IEventBus, IRepository
+    internal class InMemoryEventStore : IEventStore
     {
         public ICollection<WorkReportEvent> Events => _events;
 
         private readonly ICollection<WorkReportEvent> _events = new HashSet<WorkReportEvent>();
 
-        Task IEventBus.Publish(WorkReportEvent @event, CancellationToken cancellationToken)
+        Task IEventStore.Save(WorkReportEvent @event, CancellationToken cancellationToken)
         {
             _events.Add(@event);
 
             return Task.CompletedTask;
         }
 
-        Task<IEnumerable<WorkReportEvent>> IRepository.Load(Guid workReportId, CancellationToken cancellationToken) =>
+        Task<IEnumerable<WorkReportEvent>> IEventStore.Load(Guid workReportId, CancellationToken cancellationToken) =>
             Task.FromResult(_events.Where(e => e.WorkReportId == workReportId).AsEnumerable());
     }
 }
@@ -32,12 +32,7 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     internal static partial class ConfigurationExtensions
     {
-        public static IServiceCollection AddInMemoryEventBus(this IServiceCollection services)
-        {
-            var o = new InMemoryEventService();
-            return services
-                .AddSingleton<IEventBus>(_ => o)
-                .AddSingleton<IRepository>(_ => o);
-        }
+        public static IServiceCollection AddInMemoryEventBus(this IServiceCollection services) =>
+            services.AddSingleton<IEventStore, InMemoryEventStore>();
     }
 }

@@ -10,21 +10,19 @@ namespace Booliba.ApplicationCore.RemoveWorkReport
 
     internal class RemoveDaysCommandHandler : IRequestHandler<RemoveWorkReportCommand>
     {
-        private readonly IEventBus _eventBus;
-        private readonly IRepository _repository;
+        private readonly IEventStore _eventStore;
 
-        public RemoveDaysCommandHandler(IEventBus eventBus, IRepository repository)
+        public RemoveDaysCommandHandler(IEventStore eventStore)
         {
-            _eventBus = eventBus;
-            _repository = repository;
+            _eventStore = eventStore;
         }
 
         async Task<Unit> IRequestHandler<RemoveWorkReportCommand, Unit>.Handle(RemoveWorkReportCommand request, CancellationToken cancellationToken)
         {
-            var events = await _repository.Load(request.WorkReportId, cancellationToken);
+            var events = await _eventStore.Load(request.WorkReportId, cancellationToken);
             if (events.OfType<ReportAdded>().Any())
             {
-                await _eventBus.Publish(new WorkReportRemoved(request.WorkReportId), cancellationToken);
+                await _eventStore.Save(new WorkReportRemoved(request.WorkReportId), cancellationToken);
             }
 
             return Unit.Value;

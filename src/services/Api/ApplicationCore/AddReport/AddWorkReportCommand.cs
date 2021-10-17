@@ -9,13 +9,13 @@ namespace Booliba.ApplicationCore.AddReport
 
     internal class AddWorkReportCommandHandler : IRequestHandler<AddWorkReportCommand>
     {
-        private readonly IEventBus _eventBus;
+        private readonly IEventStore _eventStore;
 
-        public AddWorkReportCommandHandler(IEventBus eventBus) => _eventBus = eventBus;
+        public AddWorkReportCommandHandler(IEventStore repository) => _eventStore = repository;
 
         async Task<Unit> IRequestHandler<AddWorkReportCommand, Unit>.Handle(AddWorkReportCommand request, CancellationToken cancellationToken)
         {
-            await _eventBus.Publish(new ReportAdded(request.WorkReportId, request.Name, request.Days.Distinct()), cancellationToken);
+            await _eventStore.Save(new ReportAdded(request.WorkReportId, request.Name, request.Days.Distinct()), cancellationToken);
 
             return Unit.Value;
         }
