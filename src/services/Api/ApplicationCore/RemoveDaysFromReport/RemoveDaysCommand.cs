@@ -20,6 +20,11 @@ namespace Booliba.ApplicationCore.RemoveDaysFromReport
         async Task<Unit> IRequestHandler<RemoveDaysCommand, Unit>.Handle(RemoveDaysCommand request, CancellationToken cancellationToken)
         {
             var events = await _eventStore.Load(request.WorkReportId, cancellationToken);
+            if(!events.Any())
+            {
+                throw new WorkReportNotFoundException(request.WorkReportId);
+            }
+
             var reportAddedEvent = events.OfType<ReportAdded>().Single();
             var daysAddedEvents = events.OfType<DaysAdded>();
 

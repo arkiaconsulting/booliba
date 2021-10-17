@@ -20,6 +20,11 @@ namespace Booliba.ApplicationCore.AddDaysToReport
         async Task<Unit> IRequestHandler<AddDaysCommand, Unit>.Handle(AddDaysCommand request, CancellationToken cancellationToken)
         {
             var events = await _eventStore.Load(request.WorkReportId, cancellationToken);
+            if (!events.Any())
+            {
+                throw new WorkReportNotFoundException(request.WorkReportId);
+            }
+
             var reportAddedEvent = events.OfType<ReportAdded>().Single();
 
             var daysToAdd = request.DaysToAdd.Except(reportAddedEvent.Days);

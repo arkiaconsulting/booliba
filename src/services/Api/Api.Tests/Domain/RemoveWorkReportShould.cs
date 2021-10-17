@@ -28,7 +28,7 @@ namespace Booliba.Tests.Domain
                 .Should().ContainSingle();
         }
 
-        [Theory(DisplayName = "Not remove a non existing report"), BoolibaInlineAutoData]
+        [Theory(DisplayName = "Pass when removing a work report that does not exist"), BoolibaInlineAutoData]
         public async Task Test02(RemoveWorkReportCommand command)
         {
             await _context.Sut.Send(command, CancellationToken.None);
