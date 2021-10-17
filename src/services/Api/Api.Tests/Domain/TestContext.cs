@@ -16,7 +16,7 @@ namespace Booliba.Tests.Domain
     public sealed class TestContext
     {
         public IMediator Sut => _host.Services.GetRequiredService<IMediator>();
-        private ICollection<WorkReportEvent> _Events => (_host.Services.GetRequiredService<IEventBus>() as InMemoryEventService)!.Events;
+        private ICollection<WorkReportEvent> _Events => (_host.Services.GetRequiredService<IEventStore>() as InMemoryEventStore)!.Events;
 
         private readonly IHost _host;
 
