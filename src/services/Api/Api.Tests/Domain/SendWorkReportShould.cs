@@ -60,5 +60,16 @@ namespace Booliba.Tests.Domain
 
             await t.Should().ThrowAsync<WorkReportNotFoundException>();
         }
+
+        [Theory(DisplayName = "Fail when no recipients are given"), BoolibaInlineAutoData]
+        public async Task Test04(Guid workReportId, Fixture fixture)
+        {
+            _ = _context.AddWorkReport(workReportId, fixture);
+            var command = new SendWorkReportCommand(workReportId, Array.Empty<string>());
+
+            Func<Task> t = () => _context.Sut.Send(command, CancellationToken.None);
+
+            await t.Should().ThrowAsync<MissingEmailRecipientsException>();
+        }
     }
 }

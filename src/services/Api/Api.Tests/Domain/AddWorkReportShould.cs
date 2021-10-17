@@ -49,14 +49,14 @@ namespace Booliba.Tests.Domain
             _context.Events(command.WorkReportId).OfType<ReportAdded>().Should().ContainSingle()
                 .Which.Should().BeEquivalentTo(new
                 {
-                    WorkReportId = command.WorkReportId
+                    command.WorkReportId
                 });
         }
 
-        [Fact(DisplayName = "Remove day duplicates")]
-        public async Task Test05()
+        [Theory(DisplayName = "Remove day duplicates"), BoolibaInlineAutoData]
+        public async Task Test05(Guid workReportId, string workReportName)
         {
-            var command = new AddWorkReportCommand(Guid.NewGuid(), Guid.NewGuid().ToString(), new[]
+            var command = new AddWorkReportCommand(workReportId, workReportName, new[]
             {
                 DateOnly.FromDateTime(DateTime.Now),
                 DateOnly.FromDateTime(DateTime.Now)
@@ -64,7 +64,7 @@ namespace Booliba.Tests.Domain
 
             await _context.Sut.Send(command, CancellationToken.None);
 
-            _context.Events(command.WorkReportId).OfType<ReportAdded>().Should().ContainSingle()
+            _context.Events(workReportId).OfType<ReportAdded>().Should().ContainSingle()
                 .Which.Days.Should().ContainSingle();
         }
 
