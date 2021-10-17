@@ -9,4 +9,19 @@ namespace Booliba.ApplicationCore
         {
         }
     }
+
+
+    [Serializable]
+    public class MissingEmailRecipientsException : Exception
+    {
+        public MissingEmailRecipientsException(Guid workReportId)
+            :this($"Email recipients are missing when trying to send the work report with Id '{workReportId}'")
+        { }
+
+        public MissingEmailRecipientsException(string message) : base(message) { }
+
+        protected MissingEmailRecipientsException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
 }

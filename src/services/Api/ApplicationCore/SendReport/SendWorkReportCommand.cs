@@ -27,6 +27,11 @@ namespace Booliba.ApplicationCore.SendReport
                 throw new WorkReportNotFoundException(request.WorkReportId);
             }
 
+            if(!request.EmailAddresses.Any())
+            {
+                throw new MissingEmailRecipientsException(request.WorkReportId);
+            }
+
             await _emailNotifier.Send(new EmailMessage(request.WorkReportId, request.EmailAddresses), cancellationToken);
 
             await _eventStore.Save(new WorkReportSent(request.WorkReportId, request.EmailAddresses), cancellationToken);
