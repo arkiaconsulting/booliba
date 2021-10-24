@@ -26,6 +26,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Database\Storage.csproj" />
+		<ProjectReference Include="..\QuerySide\QuerySide.csproj" />
 	</ItemGroup>
 
 </Project>
