@@ -77,5 +77,33 @@ namespace Booliba.Tests.Domain
 
             await t.Should().ThrowAsync<WorkReportNotFoundException>();
         }
+
+        [Theory(DisplayName = "Remove days multiple times"), BoolibaInlineAutoData]
+        public async Task Test05(Fixture fixture)
+        {
+            var (workReportId, initialDays) = _context.AddWorkReport(fixture);
+            var daysAddedEvent = _context.AddDays(workReportId, fixture);
+            var daysRemovedEvent = _context.RemoveDays(workReportId, new[] { initialDays.PickRandom() }, fixture);
+
+            var removeDaysCommand = fixture.Build<RemoveDaysCommand>()
+                .With(c => c.WorkReportId, workReportId)
+                .With(c => c.DaysToRemove, new[] { initialDays.PickRandom() })
+                .Create();
+
+            Func<Task> t = () => _context.Sut.Send(removeDaysCommand, CancellationToken.None);
+
+            await t.Should().NotThrowAsync<NotImplementedException>();
+        }
+
+        [Theory(DisplayName = "Cannot remove days when the report has been removed"), BoolibaInlineAutoData]
+        public async Task Test06(RemoveDaysCommand command, Fixture fixture)
+        {
+            _context.AddWorkReport(command.WorkReportId, fixture);
+            _context.RemoveWorkReport(command.WorkReportId, fixture);
+
+            Func<Task> t = () => _context.Sut.Send(command, CancellationToken.None);
+
+            await t.Should().ThrowAsync<WorkReportRemovedException>();
+        }
     }
 }

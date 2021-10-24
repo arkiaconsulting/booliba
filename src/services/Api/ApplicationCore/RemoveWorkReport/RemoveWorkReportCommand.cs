@@ -1,6 +1,6 @@
 ﻿// This code is under Copyright (C) 2021 of Arkia Consulting SAS all right reserved
 
-using Booliba.ApplicationCore.AddReport;
+using Booliba.ApplicationCore.CoreDomain;
 using Booliba.ApplicationCore.Ports;
 using MediatR;
 
@@ -12,18 +12,19 @@ namespace Booliba.ApplicationCore.RemoveWorkReport
     {
         private readonly IEventStore _eventStore;
 
-        public RemoveDaysCommandHandler(IEventStore eventStore)
-        {
-            _eventStore = eventStore;
-        }
+        public RemoveDaysCommandHandler(IEventStore eventStore) => _eventStore = eventStore;
 
         async Task<Unit> IRequestHandler<RemoveWorkReportCommand, Unit>.Handle(RemoveWorkReportCommand request, CancellationToken cancellationToken)
         {
             var events = await _eventStore.Load(request.WorkReportId, cancellationToken);
-            if (events.OfType<ReportAdded>().Any())
+            if (!events.Any())
             {
-                await _eventStore.Save(new WorkReportRemoved(request.WorkReportId), cancellationToken);
+                return Unit.Value;
             }
+            var aggregate = WorkReportAggregate.ReHydrate(request.WorkReportId, events);
+            aggregate.Remove();
+
+            await _eventStore.Save(aggregate.PendingEvents, cancellationToken);
 
             return Unit.Value;
         }

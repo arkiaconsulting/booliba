@@ -1,6 +1,6 @@
 ﻿// This code is under Copyright (C) 2021 of Arkia Consulting SAS all right reserved
 
-using Booliba.ApplicationCore.AddReport;
+using Booliba.ApplicationCore.CoreDomain;
 using Booliba.ApplicationCore.Ports;
 using MediatR;
 
@@ -12,28 +12,19 @@ namespace Booliba.ApplicationCore.RemoveDaysFromReport
     {
         private readonly IEventStore _eventStore;
 
-        public RemoveDaysCommandHandler(IEventStore eventStore)
-        {
-            _eventStore = eventStore;
-        }
+        public RemoveDaysCommandHandler(IEventStore eventStore) => _eventStore = eventStore;
 
         async Task<Unit> IRequestHandler<RemoveDaysCommand, Unit>.Handle(RemoveDaysCommand request, CancellationToken cancellationToken)
         {
             var events = await _eventStore.Load(request.WorkReportId, cancellationToken);
-            if(!events.Any())
+            if (!events.Any())
             {
                 throw new WorkReportNotFoundException(request.WorkReportId);
             }
+            var aggregate = WorkReportAggregate.ReHydrate(request.WorkReportId, events);
+            aggregate.RemoveDays(request.DaysToRemove);
 
-            var reportAddedEvent = events.OfType<ReportAdded>().Single();
-            var daysAddedEvents = events.OfType<DaysAdded>();
-
-            var daysToRemoveEffectively = request.DaysToRemove.Intersect(reportAddedEvent.Days.Concat(daysAddedEvents.SelectMany(e => e.Days)));
-
-            if (daysToRemoveEffectively.Any())
-            {
-                await _eventStore.Save(new DaysRemoved(request.WorkReportId, request.DaysToRemove), cancellationToken);
-            }
+            await _eventStore.Save(aggregate.PendingEvents, cancellationToken);
 
             return Unit.Value;
         }

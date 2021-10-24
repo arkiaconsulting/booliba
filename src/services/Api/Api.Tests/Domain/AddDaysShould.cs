@@ -73,5 +73,16 @@ namespace Booliba.Tests.Domain
 
             await t.Should().ThrowAsync<WorkReportNotFoundException>();
         }
+
+        [Theory(DisplayName = "Cannot add days when the report has been removed"), BoolibaInlineAutoData]
+        public async Task Test05(AddDaysCommand command, Fixture fixture)
+        {
+            _context.AddWorkReport(command.WorkReportId, fixture);
+            _context.RemoveWorkReport(command.WorkReportId, fixture);
+
+            Func<Task> t = () => _context.Sut.Send(command, CancellationToken.None);
+
+            await t.Should().ThrowAsync<WorkReportRemovedException>();
+        }
     }
 }

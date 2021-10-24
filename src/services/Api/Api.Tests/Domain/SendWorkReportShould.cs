@@ -2,7 +2,6 @@
 
 using AutoFixture;
 using Booliba.ApplicationCore;
-using Booliba.ApplicationCore.RemoveWorkReport;
 using Booliba.ApplicationCore.SendReport;
 using Booliba.Tests.Fixtures;
 using FluentAssertions;
@@ -70,6 +69,28 @@ namespace Booliba.Tests.Domain
             Func<Task> t = () => _context.Sut.Send(command, CancellationToken.None);
 
             await t.Should().ThrowAsync<MissingEmailRecipientsException>();
+        }
+
+        [Theory(DisplayName = "Send the report multiple times"), BoolibaInlineAutoData]
+        public async Task Test05(SendWorkReportCommand command, Fixture fixture)
+        {
+            _ = _context.AddWorkReport(command.WorkReportId, fixture);
+            _context.Send(command.WorkReportId, command.EmailAddresses, fixture);
+
+            Func<Task> t = () => _context.Sut.Send(command, CancellationToken.None);
+
+            await t.Should().NotThrowAsync<NotImplementedException>();
+        }
+
+        [Theory(DisplayName = "Cannot send to recipients when the report has been removed"), BoolibaInlineAutoData]
+        public async Task Test06(SendWorkReportCommand command, Fixture fixture)
+        {
+            _context.AddWorkReport(command.WorkReportId, fixture);
+            _context.RemoveWorkReport(command.WorkReportId, fixture);
+
+            Func<Task> t = () => _context.Sut.Send(command, CancellationToken.None);
+
+            await t.Should().ThrowAsync<WorkReportRemovedException>();
         }
     }
 }
