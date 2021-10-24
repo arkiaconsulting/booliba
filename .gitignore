@@ -351,3 +351,5 @@ MigrationBackup/
 
 *.Development.json
 local.settings.json
+
+.vscode/
