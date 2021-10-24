@@ -6,6 +6,7 @@ using Booliba.ApplicationCore.Ports;
 using Booliba.ApplicationCore.RemoveDaysFromReport;
 using Booliba.ApplicationCore.RemoveWorkReport;
 using Booliba.ApplicationCore.SendReport;
+using Booliba.QuerySide;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -21,13 +22,18 @@ namespace Booliba.Tests.Fixtures
 
         private ICollection<WorkReportEvent> _Events => (_host.Services.GetRequiredService<IEventStore>() as InMemoryEventStore)!.Events;
         private IEnumerable<EmailMessage> _Emails => (_host.Services.GetRequiredService<IEmailNotifier>() as InMemoryEmailNotifier)!.Emails;
+        private ICollection<WorkReportEntity> _Entities => (_host.Services.GetRequiredService<IWorkReportProjection>() as InMemoryProjection)!.WorkReports;
 
         private readonly IHost _host;
 
         public TestContext() =>
             _host = Host.CreateDefaultBuilder()
-            .ConfigureServices(services => services.AddApplicationCore().AddInMemoryEventBus().AddInMemoryEmailNotifier())
-            .Build();
+            .ConfigureServices(services =>
+                services.AddApplicationCore()
+                .AddInMemoryEventBus()
+                .AddInMemoryEmailNotifier()
+                .AddQuerySide().AddInMemoryProjection()
+            ).Build();
 
         public IEnumerable<WorkReportEvent> Events(Guid workReportId) =>
             _Events.Where(e => e.WorkReportId == workReportId);
@@ -96,5 +102,8 @@ namespace Booliba.Tests.Fixtures
 
             _Events.Add(sentEvent);
         }
+
+        internal void AddProjectedWorkReport(Guid workReportId, string workReportName, DateOnly[] days) =>
+            _Entities.Add(new WorkReportEntity(workReportId, workReportName, days));
     }
 }

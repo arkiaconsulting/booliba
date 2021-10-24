@@ -1,6 +1,7 @@
 // This code is under Copyright (C) 2021 of Arkia Consulting SAS all right reserved
 
 using Booliba.Api.Infrastructure;
+using Booliba.QuerySide;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +19,8 @@ builder.Services
     .AddApplicationCore()
     .AddInMemoryEventStore()
     .AddNullEmailNotifier();
+
+builder.Services.AddQuerySide();
 
 var app = builder.Build();
 
