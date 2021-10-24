@@ -1,6 +1,6 @@
 ﻿// This code is under Copyright (C) 2021 of Arkia Consulting SAS all right reserved
 
-using Booliba.ApplicationCore.AddReport;
+using Booliba.ApplicationCore.CoreDomain;
 using Booliba.ApplicationCore.Ports;
 using MediatR;
 
@@ -12,10 +12,7 @@ namespace Booliba.ApplicationCore.AddDaysToReport
     {
         private readonly IEventStore _eventStore;
 
-        public AddWorkReportCommandHandler(IEventStore eventStore)
-        {
-            _eventStore = eventStore;
-        }
+        public AddWorkReportCommandHandler(IEventStore eventStore) => _eventStore = eventStore;
 
         async Task<Unit> IRequestHandler<AddDaysCommand, Unit>.Handle(AddDaysCommand request, CancellationToken cancellationToken)
         {
@@ -25,14 +22,10 @@ namespace Booliba.ApplicationCore.AddDaysToReport
                 throw new WorkReportNotFoundException(request.WorkReportId);
             }
 
-            var reportAddedEvent = events.OfType<ReportAdded>().Single();
+            var aggregate = WorkReportAggregate.ReHydrate(request.WorkReportId, events);
+            aggregate.AddDays(request.DaysToAdd);
 
-            var daysToAdd = request.DaysToAdd.Except(reportAddedEvent.Days);
-
-            if (daysToAdd.Any())
-            {
-                await _eventStore.Save(new DaysAdded(request.WorkReportId, daysToAdd), cancellationToken);
-            }
+            await _eventStore.Save(aggregate.PendingEvents, cancellationToken);
 
             return Unit.Value;
         }

@@ -16,9 +16,9 @@ namespace Booliba.Tests.Fixtures
 
         private readonly ICollection<WorkReportEvent> _events = new HashSet<WorkReportEvent>();
 
-        Task IEventStore.Save(WorkReportEvent @event, CancellationToken cancellationToken)
+        Task IEventStore.Save(IEnumerable<WorkReportEvent> events, CancellationToken cancellationToken)
         {
-            _events.Add(@event);
+            events.ToList().ForEach(e => _events.Add(e));
 
             return Task.CompletedTask;
         }

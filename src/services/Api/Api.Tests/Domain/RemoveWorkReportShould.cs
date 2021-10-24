@@ -4,6 +4,7 @@ using AutoFixture;
 using Booliba.ApplicationCore.RemoveWorkReport;
 using Booliba.Tests.Fixtures;
 using FluentAssertions;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,6 +36,17 @@ namespace Booliba.Tests.Domain
 
             _context.Events(command.WorkReportId).OfType<WorkReportRemoved>()
                 .Should().BeEmpty();
+        }
+
+        [Theory(DisplayName = "Pass when removing a work report that has already been removed"), BoolibaInlineAutoData]
+        public async Task Test03(RemoveWorkReportCommand command, Fixture fixture)
+        {
+            _ = _context.AddWorkReport(command.WorkReportId, fixture);
+            _context.RemoveWorkReport(command.WorkReportId, fixture);
+
+            Func<Task> t = () => _context.Sut.Send(command, CancellationToken.None);
+
+            await t.Should().NotThrowAsync<NotImplementedException>();
         }
     }
 }

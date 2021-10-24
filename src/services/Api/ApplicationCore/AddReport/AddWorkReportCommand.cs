@@ -1,5 +1,6 @@
 ﻿// This code is under Copyright (C) 2021 of Arkia Consulting SAS all right reserved
 
+using Booliba.ApplicationCore.CoreDomain;
 using Booliba.ApplicationCore.Ports;
 using MediatR;
 
@@ -15,7 +16,9 @@ namespace Booliba.ApplicationCore.AddReport
 
         async Task<Unit> IRequestHandler<AddWorkReportCommand, Unit>.Handle(AddWorkReportCommand request, CancellationToken cancellationToken)
         {
-            await _eventStore.Save(new ReportAdded(request.WorkReportId, request.Name, request.Days.Distinct()), cancellationToken);
+            var aggregate = WorkReportAggregate.Create(request.WorkReportId, request.Name, request.Days);
+
+            await _eventStore.Save(aggregate.PendingEvents, cancellationToken);
 
             return Unit.Value;
         }

@@ -3,6 +3,8 @@
 using AutoFixture;
 using Booliba.ApplicationCore.AddReport;
 using Booliba.ApplicationCore.Ports;
+using Booliba.ApplicationCore.RemoveDaysFromReport;
+using Booliba.ApplicationCore.RemoveWorkReport;
 using Booliba.ApplicationCore.SendReport;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -44,6 +46,15 @@ namespace Booliba.Tests.Fixtures
             return (workReportAddedEvent.WorkReportId, workReportAddedEvent.Days);
         }
 
+        internal void RemoveWorkReport(Guid workReportId, Fixture fixture)
+        {
+            var workReportRemovedEvent = fixture.Build<WorkReportRemoved>()
+                .With(c => c.WorkReportId, workReportId)
+                .Create();
+
+            _Events.Add(workReportRemovedEvent);
+        }
+
         public (Guid Id, IEnumerable<DateOnly> Days) AddWorkReport(Fixture fixture)
         {
             var workReportAddedEvent = fixture.Create<ReportAdded>();
@@ -62,6 +73,28 @@ namespace Booliba.Tests.Fixtures
             _Events.Add(daysAdded);
 
             return daysAdded.Days;
+        }
+
+        internal IEnumerable<DateOnly> RemoveDays(Guid workReportId, IEnumerable<DateOnly> daysToRemove, Fixture fixture)
+        {
+            var daysRemovedEvent = fixture.Build<DaysRemoved>()
+                .With(c => c.WorkReportId, workReportId)
+                .With(c => c.Days, daysToRemove)
+                .Create();
+
+            _Events.Add(daysRemovedEvent);
+
+            return daysRemovedEvent.Days;
+        }
+
+        internal void Send(Guid workReportId, string[] emailAddresses, Fixture fixture)
+        {
+            var sentEvent = fixture.Build<WorkReportSent>()
+                .With(c => c.WorkReportId, workReportId)
+                .With(c => c.EmailAddresses, emailAddresses)
+                .Create();
+
+            _Events.Add(sentEvent);
         }
     }
 }
