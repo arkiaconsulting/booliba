@@ -1,10 +1,23 @@
 // This code is under Copyright (C) 2021 of Arkia Consulting SAS all right reserved
 
+using Booliba.Api.Infrastructure;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
-builder.Services.AddControllers();
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new DateOnlyConverter());
+        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+    });
+
+builder.Services
+    .AddApplicationCore()
+    .AddInMemoryEventStore()
+    .AddNullEmailNotifier();
 
 var app = builder.Build();
 
