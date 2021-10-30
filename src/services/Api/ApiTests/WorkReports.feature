@@ -21,3 +21,14 @@ Scenario: Remove a work report
 	Given I have added a work report
 	When I remove my work report
 	Then I can see that my work report is no longer in the work report list
+
+Scenario: Send my work report
+	Given I have added a work report
+	When I send my report to the following recipients
+		| email            |
+		| toto@contoso.com |
+		| titi@contoso.com |
+	Then I can see that my work report has been sent to the following recipients
+		| email            |
+		| toto@contoso.com |
+		| titi@contoso.com |

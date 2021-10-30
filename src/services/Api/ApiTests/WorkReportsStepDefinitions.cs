@@ -6,9 +6,11 @@ using System;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using TechTalk.SpecFlow;
+using TechTalk.SpecFlow.Assist;
+using Xunit.Sdk;
 
 namespace Booliba.ApiTests
 {
@@ -17,16 +19,8 @@ namespace Booliba.ApiTests
     {
         private readonly TestContext _context;
         private Guid _workReportId;
-        private readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        };
 
-        public WorkReportsStepDefinitions(TestContext context)
-        {
-            _context = context;
-            _jsonSerializerOptions.Converters.Add(new DateOnlyConverter());
-        }
+        public WorkReportsStepDefinitions(TestContext context) => _context = context;
 
         [Given(@"I have prepared my report for the current month")]
         public void GivenIHavePreparedMyReportForTheCurrentMonth()
@@ -45,7 +39,7 @@ namespace Booliba.ApiTests
             using var httpClient = new HttpClient { BaseAddress = _context.ApiBaseUri };
             var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"workreports/{_workReportId}")
             {
-                Content = JsonContent.Create(_context.CurrentWorkReport, options: _jsonSerializerOptions)
+                Content = JsonContent.Create(_context.CurrentWorkReport, options: _context.JsonSerializerOptions)
             };
 
             using var response = await httpClient.SendAsync(httpRequest);
@@ -61,7 +55,7 @@ namespace Booliba.ApiTests
             using var response = await httpClient.SendAsync(httpRequest);
             response.EnsureSuccessStatusCode();
 
-            var reports = await response.Content.ReadFromJsonAsync<WorkReportDto[]>();
+            var reports = await response.Content.ReadFromJsonAsync<WorkReportDto[]>(_context.JsonSerializerOptions);
             reports.Should().ContainEquivalentOf(new
             {
                 Id = _workReportId
@@ -81,7 +75,7 @@ namespace Booliba.ApiTests
             using var httpClient = new HttpClient { BaseAddress = _context.ApiBaseUri };
             var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"workreports/{_workReportId}")
             {
-                Content = JsonContent.Create(_context.CurrentWorkReport, options: _jsonSerializerOptions)
+                Content = JsonContent.Create(_context.CurrentWorkReport, options: _context.JsonSerializerOptions)
             };
 
             using var response = await httpClient.SendAsync(httpRequest);
@@ -97,7 +91,7 @@ namespace Booliba.ApiTests
                 Content = JsonContent.Create(new
                 {
                     Days = new[] { day }
-                }, options: _jsonSerializerOptions)
+                }, options: _context.JsonSerializerOptions)
             };
 
             using var response = await httpClient.SendAsync(httpRequest);
@@ -113,20 +107,22 @@ namespace Booliba.ApiTests
             using var response = await httpClient.SendAsync(httpRequest);
             response.EnsureSuccessStatusCode();
 
-            var report = await response.Content.ReadFromJsonAsync<WorkReportDto>();
+            var report = await response.Content.ReadFromJsonAsync<WorkReportDto>(_context.JsonSerializerOptions);
             report!.Days.Should().Contain(DateOnly.ParseExact(day, "yyyy/MM/dd"));
         }
 
         [When(@"I remove one of the days from the work report")]
         public async Task WhenIRemoveOneOfTheDaysFromTheWorkReport()
         {
+            var dayToRemove = _context.CurrentWorkReport!.Days.PickRandom();
+
             using var httpClient = new HttpClient { BaseAddress = _context.ApiBaseUri };
             var httpRequest = new HttpRequestMessage(HttpMethod.Delete, $"workreports/{_workReportId}/days")
             {
                 Content = JsonContent.Create(new
                 {
-                    Days = new[] { _context.CurrentWorkReport!.Days.PickRandom() }
-                }, options: _jsonSerializerOptions)
+                    Days = new[] { dayToRemove }
+                }, options: _context.JsonSerializerOptions)
             };
 
             using var response = await httpClient.SendAsync(httpRequest);
@@ -136,14 +132,36 @@ namespace Booliba.ApiTests
         [Then(@"I can see that my work report contains one day less")]
         public async Task ThenICanSeeThatMyWorkReportContainsOneDayLess()
         {
-            using var httpClient = new HttpClient { BaseAddress = _context.ApiBaseUri };
-            var httpRequest = new HttpRequestMessage(HttpMethod.Get, $"workreports/{_workReportId}");
+            var tcs = new CancellationTokenSource(TimeSpan.FromSeconds(10));
 
-            using var response = await httpClient.SendAsync(httpRequest);
-            response.EnsureSuccessStatusCode();
+            try
+            {
+                while (true)
+                {
+                    tcs.Token.ThrowIfCancellationRequested();
 
-            var report = await response.Content.ReadFromJsonAsync<WorkReportDto>();
-            report!.Days.Should().HaveCount(_context.CurrentWorkReport!.Days.Count() - 1);
+                    using var httpClient = new HttpClient { BaseAddress = _context.ApiBaseUri };
+                    var httpRequest = new HttpRequestMessage(HttpMethod.Get, $"workreports/{_workReportId}");
+
+                    using var response = await httpClient.SendAsync(httpRequest, tcs.Token);
+                    response.EnsureSuccessStatusCode();
+
+                    try
+                    {
+                        var report = await response.Content.ReadFromJsonAsync<WorkReportDto>(_context.JsonSerializerOptions);
+                        report!.Days.Should().HaveCount(_context.CurrentWorkReport!.Days.Count() - 1);
+                        break;
+                    }
+                    catch (XunitException)
+                    {
+                        await Task.Delay(500);
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                throw new XunitException("Unable to validate the step within the given delay");
+            }
         }
 
         [When(@"I remove my work report")]
@@ -151,6 +169,24 @@ namespace Booliba.ApiTests
         {
             using var httpClient = new HttpClient { BaseAddress = _context.ApiBaseUri };
             var httpRequest = new HttpRequestMessage(HttpMethod.Delete, $"workreports/{_workReportId}");
+
+            using var response = await httpClient.SendAsync(httpRequest);
+            response.EnsureSuccessStatusCode();
+        }
+
+        [When(@"I send my report to the following recipients")]
+        public async Task WhenISendMyReportToTheFollowingRecipients(Table table)
+        {
+            var emails = table.CreateSet(r => r["email"]);
+
+            using var httpClient = new HttpClient { BaseAddress = _context.ApiBaseUri };
+            var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"workreports/{_workReportId}/send")
+            {
+                Content = JsonContent.Create(new
+                {
+                    EmailAddresses = emails
+                }, options: _context.JsonSerializerOptions)
+            };
 
             using var response = await httpClient.SendAsync(httpRequest);
             response.EnsureSuccessStatusCode();
@@ -165,11 +201,47 @@ namespace Booliba.ApiTests
             using var response = await httpClient.SendAsync(httpRequest);
             response.EnsureSuccessStatusCode();
 
-            var reports = await response.Content.ReadFromJsonAsync<WorkReportDto[]>();
+            var reports = await response.Content.ReadFromJsonAsync<WorkReportDto[]>(_context.JsonSerializerOptions);
             reports.Should().NotContainEquivalentOf(new
             {
                 Id = _workReportId
             });
+        }
+
+        [Then(@"I can see that my work report has been sent to the following recipients")]
+        public async Task ThenICanSeeThatMyWorkReportHasBeenSentToTheFollowingRecipients(Table table)
+        {
+            var emails = table.CreateSet(r => r["email"]);
+            var tcs = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+
+            try
+            {
+                while (true)
+                {
+                    tcs.Token.ThrowIfCancellationRequested();
+
+                    using var httpClient = new HttpClient { BaseAddress = _context.ApiBaseUri };
+                    var httpRequest = new HttpRequestMessage(HttpMethod.Get, $"workreports/{_workReportId}");
+
+                    using var response = await httpClient.SendAsync(httpRequest, tcs.Token);
+                    response.EnsureSuccessStatusCode();
+
+                    try
+                    {
+                        var report = await response.Content.ReadFromJsonAsync<WorkReportDto>(_context.JsonSerializerOptions);
+                        report!.Recipients.Should().BeEquivalentTo(emails);
+                        break;
+                    }
+                    catch (XunitException)
+                    {
+                        await Task.Delay(500);
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                throw new XunitException("Unable to validate the step within the given delay");
+            }
         }
     }
 }

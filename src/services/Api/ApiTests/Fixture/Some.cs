@@ -6,11 +6,13 @@ namespace Booliba.ApiTests.Fixture
 {
     internal static class Some
     {
+        private static readonly Random _random = new(DateTime.Now.Millisecond);
+
         public static DateOnly DayInCurrentMonth =>
             new(
                 DateTimeOffset.UtcNow.Year,
                 DateTimeOffset.UtcNow.Month,
-                new Random(DateTimeOffset.UtcNow.Millisecond)
+                _random
                 .Next(
                     1,
                     DateTime.DaysInMonth(DateTimeOffset.UtcNow.Year, DateTimeOffset.UtcNow.Month)
