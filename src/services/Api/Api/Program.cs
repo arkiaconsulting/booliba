@@ -19,7 +19,8 @@ builder.Services
     .AddApplicationCore()
     .AddInMemoryEventStore()
     .AddNullEmailNotifier()
-    .AddQuerySide();
+    .AddQuerySide()
+    .AddInMemoryProjection();
 
 builder.Services.AddQuerySide();
 
