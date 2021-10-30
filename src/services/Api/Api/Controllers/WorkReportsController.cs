@@ -5,6 +5,7 @@ using Booliba.ApplicationCore.AddReport;
 using Booliba.ApplicationCore.RemoveDaysFromReport;
 using Booliba.ApplicationCore.RemoveWorkReport;
 using Booliba.ApplicationCore.SendReport;
+using Booliba.QuerySide;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -87,10 +88,54 @@ namespace Booliba.Api.Controllers
 
             return Ok();
         }
+
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetWorkReport(
+            [FromRoute] Guid id,
+            CancellationToken cancellationToken)
+        {
+            var response = await _mediator.Send(
+                new GetWorkReportQuery(id),
+                cancellationToken
+            );
+
+            if (response?.Result is null)
+            {
+                return NotFound();
+            }
+
+            return Ok(
+                new WorkReportResponse(
+                    response.Result.Id,
+                    response.Result.Name,
+                    response.Result.Days,
+                    response.Result.RecipientEmails)
+            );
+        }
+
+        [HttpGet()]
+        public async Task<IActionResult> GetWorkReports(CancellationToken cancellationToken)
+        {
+            var response = await _mediator.Send(
+                new GetWorkReportsQuery(),
+                cancellationToken
+            );
+
+            return Ok(
+                response?.Results.Select(wr =>
+                    new WorkReportResponse(
+                        wr.Id,
+                        wr.Name,
+                        wr.Days,
+                        wr.RecipientEmails)
+                )
+            );
+        }
     }
 
     public record AddWorkReportRequest(string Name, DateOnly[] Days);
     public record AddWorkReportDaysRequest(DateOnly[] Days);
     public record RemoveWorkReportDaysRequest(DateOnly[] Days);
     public record SendWorkReportRequest(string[] EmailAddresses);
+    public record WorkReportResponse(Guid Id, string Name, DateOnly[] Days, string[] Recipients);
 }

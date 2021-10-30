@@ -1,4 +1,4 @@
-@id = f8b7fcb0-98c9-4ab5-bcb7-44f4f444916a
+@id = f8b7fcb0-98c9-4ab5-bcb7-44f4f354916a
 
 # @name addWorkReport
 POST {{base-address}}/workreports/{{id}} HTTP/1.1
@@ -20,7 +20,8 @@ Content-Type: application/json
     "days": [
         "2021-12-31",
         "2022-12-31",
-        "2021-12-22"
+        "2021-12-22",
+        "2011-12-22"
     ]
 }
 
@@ -37,10 +38,6 @@ Content-Type: application/json
 
 ###
 
-DELETE {{base-address}}/workreports/{{id}} HTTP/1.1
-
-###
-
 POST {{base-address}}/workreports/{{id}}/send HTTP/1.1
 Content-Type: application/json
 
@@ -50,3 +47,15 @@ Content-Type: application/json
         "titi@contoso.com"
     ]
 }
+
+###
+
+DELETE {{base-address}}/workreports/{{id}} HTTP/1.1
+
+###
+
+GET {{base-address}}/workreports/{{id}} HTTP/1.1
+
+###
+
+GET {{base-address}}/workreports HTTP/1.1
