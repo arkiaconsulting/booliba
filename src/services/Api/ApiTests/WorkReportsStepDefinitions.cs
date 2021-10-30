@@ -1,7 +1,9 @@
 // This code is under Copyright (C) 2021 of Arkia Consulting SAS all right reserved
 
 using Booliba.ApiTests.Fixture;
+using FluentAssertions;
 using System;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -53,13 +55,17 @@ namespace Booliba.ApiTests
         [Then(@"I can see my work report into the work report list")]
         public async Task ThenICanSeeThatMyReportHasBeenSavedAsync()
         {
-            throw new PendingStepException();
-
             using var httpClient = new HttpClient { BaseAddress = _context.ApiBaseUri };
-            var httpRequest = new HttpRequestMessage(HttpMethod.Get, "reports");
+            var httpRequest = new HttpRequestMessage(HttpMethod.Get, "workreports");
 
             using var response = await httpClient.SendAsync(httpRequest);
             response.EnsureSuccessStatusCode();
+
+            var reports = await response.Content.ReadFromJsonAsync<WorkReportDto[]>();
+            reports.Should().ContainEquivalentOf(new
+            {
+                Id = _workReportId
+            });
         }
 
         [Given(@"I have added a work report")]
@@ -101,13 +107,14 @@ namespace Booliba.ApiTests
         [Then(@"I can see that the day '([^']*)' has been added to the days list")]
         public async Task ThenICanSeeThatTheDayHasBeenAddedToTheDaysList(string day)
         {
-            throw new PendingStepException();
-
             using var httpClient = new HttpClient { BaseAddress = _context.ApiBaseUri };
             var httpRequest = new HttpRequestMessage(HttpMethod.Get, $"workreports/{_workReportId}");
 
             using var response = await httpClient.SendAsync(httpRequest);
             response.EnsureSuccessStatusCode();
+
+            var report = await response.Content.ReadFromJsonAsync<WorkReportDto>();
+            report!.Days.Should().Contain(DateOnly.ParseExact(day, "yyyy/MM/dd"));
         }
 
         [When(@"I remove one of the days from the work report")]
@@ -129,13 +136,14 @@ namespace Booliba.ApiTests
         [Then(@"I can see that my work report contains one day less")]
         public async Task ThenICanSeeThatMyWorkReportContainsOneDayLess()
         {
-            throw new PendingStepException();
-
             using var httpClient = new HttpClient { BaseAddress = _context.ApiBaseUri };
             var httpRequest = new HttpRequestMessage(HttpMethod.Get, $"workreports/{_workReportId}");
 
             using var response = await httpClient.SendAsync(httpRequest);
             response.EnsureSuccessStatusCode();
+
+            var report = await response.Content.ReadFromJsonAsync<WorkReportDto>();
+            report!.Days.Should().HaveCount(_context.CurrentWorkReport!.Days.Count() - 1);
         }
 
         [When(@"I remove my work report")]
@@ -151,13 +159,17 @@ namespace Booliba.ApiTests
         [Then(@"I can see that my work report is no longer in the work report list")]
         public async Task ThenICanSeeThatMyWorkReportIsNoLongerInTheWorkReportList()
         {
-            throw new PendingStepException();
-
             using var httpClient = new HttpClient { BaseAddress = _context.ApiBaseUri };
             var httpRequest = new HttpRequestMessage(HttpMethod.Get, $"workreports");
 
             using var response = await httpClient.SendAsync(httpRequest);
             response.EnsureSuccessStatusCode();
+
+            var reports = await response.Content.ReadFromJsonAsync<WorkReportDto[]>();
+            reports.Should().NotContainEquivalentOf(new
+            {
+                Id = _workReportId
+            });
         }
     }
 }
