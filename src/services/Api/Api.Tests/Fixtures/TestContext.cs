@@ -19,9 +19,11 @@ namespace Booliba.Tests.Fixtures
     public sealed class TestContext
     {
         public IMediator Sut => _host.Services.GetRequiredService<IMediator>();
+        public IEnumerable<WorkReportEntity> Entities => _Entities;
 
         private ICollection<WorkReportEvent> _Events => (_host.Services.GetRequiredService<IEventStore>() as InMemoryEventStore)!.Events;
         private IEnumerable<EmailMessage> _Emails => (_host.Services.GetRequiredService<IEmailNotifier>() as InMemoryEmailNotifier)!.Emails;
+        public ProjectionService ProjectionService => _host.Services.GetRequiredService<ProjectionService>();
         private ICollection<WorkReportEntity> _Entities => (_host.Services.GetRequiredService<IWorkReportProjection>() as InMemoryProjection)!.WorkReports;
 
         private readonly IHost _host;
@@ -103,7 +105,7 @@ namespace Booliba.Tests.Fixtures
             _Events.Add(sentEvent);
         }
 
-        internal void AddProjectedWorkReport(Guid workReportId, string workReportName, DateOnly[] days) =>
-            _Entities.Add(new WorkReportEntity(workReportId, workReportName, days));
+        internal void AddProjectedWorkReport(Guid workReportId, string workReportName, DateOnly[] days, string[]? recipientEmails = default) =>
+            _Entities.Add(new WorkReportEntity(workReportId, workReportName, days, recipientEmails ?? Array.Empty<string>()));
     }
 }
