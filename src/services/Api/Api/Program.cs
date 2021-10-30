@@ -23,6 +23,7 @@ builder.Services
     .AddInMemoryProjection();
 
 builder.Services.AddQuerySide();
+builder.Services.AddApplicationInsightsTelemetry();
 
 var app = builder.Build();
 

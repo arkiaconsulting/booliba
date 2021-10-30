@@ -3,46 +3,41 @@
 using Booliba.Api.Fakes;
 using Booliba.QuerySide;
 using MediatR;
+using System.Collections.Concurrent;
 using System.Reflection;
 
 namespace Booliba.Api.Fakes
 {
     internal class InMemoryProjection : IWorkReportProjection
     {
-        public ICollection<WorkReportEntity> WorkReports => _workReportEntities;
-
-        private readonly ICollection<WorkReportEntity> _workReportEntities = new List<WorkReportEntity>();
+        private readonly ConcurrentDictionary<Guid, WorkReportEntity> _workReportEntities = new ConcurrentDictionary<Guid, WorkReportEntity>();
 
         #region IWorkReportProjection
 
         Task<WorkReportEntity[]> IWorkReportProjection.List(CancellationToken cancellationToken) =>
-            Task.FromResult(_workReportEntities.ToArray());
+            Task.FromResult(_workReportEntities.Values.ToArray());
 
         Task<WorkReportEntity?> IWorkReportProjection.Get(Guid workReportId, CancellationToken cancellationToken) =>
             Task.FromResult(
-                _workReportEntities
-                .SingleOrDefault(wr => wr.Id == workReportId)
+                _workReportEntities.GetValueOrDefault(workReportId)
             );
         Task IWorkReportProjection.Add(WorkReportEntity entity, CancellationToken cancellationToken)
         {
-            _workReportEntities.Add(entity);
+            _workReportEntities.AddOrUpdate(entity.Id, _ => entity, (_, _) => entity);
 
             return Task.CompletedTask;
         }
 
         Task IWorkReportProjection.Update(WorkReportEntity entity, CancellationToken cancellationToken)
         {
-            var existingEntity = _workReportEntities.Single(e => e.Id == entity.Id);
-            _workReportEntities.Remove(existingEntity);
-            _workReportEntities.Add(entity);
+            _workReportEntities.AddOrUpdate(entity.Id, _ => entity, (_, _) => entity);
 
             return Task.CompletedTask;
         }
 
         Task IWorkReportProjection.Delete(Guid workReportId, CancellationToken cancellationToken)
         {
-            var existingEntity = _workReportEntities.Single(e => e.Id == workReportId);
-            _workReportEntities.Remove(existingEntity);
+            _ = _workReportEntities.Remove(workReportId, out var _);
 
             return Task.CompletedTask;
         }

@@ -10,6 +10,7 @@ using Xunit;
 
 namespace Booliba.Tests.Query
 {
+    [Trait("Category", "Unit")]
     public class ProjectionServiceShould
     {
         private readonly TestContext _context;

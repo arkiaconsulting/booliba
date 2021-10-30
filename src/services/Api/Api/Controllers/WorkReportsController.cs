@@ -16,8 +16,15 @@ namespace Booliba.Api.Controllers
     public class WorkReportsController : ControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly ILogger<WorkReportsController> _logger;
 
-        public WorkReportsController(IMediator mediator) => _mediator = mediator;
+        public WorkReportsController(
+            IMediator mediator,
+            ILogger<WorkReportsController> logger)
+        {
+            _mediator = mediator;
+            _logger = logger;
+        }
 
         [HttpPost("{id:guid}")]
         [Consumes("application/json")]
@@ -26,6 +33,8 @@ namespace Booliba.Api.Controllers
             AddWorkReportRequest request,
             CancellationToken cancellationToken)
         {
+            _logger.LogDebug("Adding work report {Id} {Name} {DayCount}", id, request.Name, request.Days.Length);
+
             await _mediator.Send(
                 new AddWorkReportCommand(id, request.Name, request.Days),
                 cancellationToken
@@ -40,6 +49,8 @@ namespace Booliba.Api.Controllers
             [FromBody] AddWorkReportDaysRequest request,
             CancellationToken cancellationToken)
         {
+            _logger.LogDebug("Adding days to work report {Id} {DayCount}", id, request.Days.Length);
+
             await _mediator.Send(
                 new AddDaysCommand(id, request.Days),
                 cancellationToken
@@ -54,6 +65,8 @@ namespace Booliba.Api.Controllers
             [FromBody] RemoveWorkReportDaysRequest request,
             CancellationToken cancellationToken)
         {
+            _logger.LogDebug("Removing days from work report {Id} {DayCount}", id, request.Days.Length);
+
             await _mediator.Send(
                 new RemoveDaysCommand(id, request.Days),
                 cancellationToken
@@ -67,6 +80,8 @@ namespace Booliba.Api.Controllers
             [FromRoute] Guid id,
             CancellationToken cancellationToken)
         {
+            _logger.LogDebug("Removing work report {Id}", id);
+
             await _mediator.Send(
                 new RemoveWorkReportCommand(id),
                 cancellationToken
@@ -81,6 +96,8 @@ namespace Booliba.Api.Controllers
             [FromBody] SendWorkReportRequest request,
             CancellationToken cancellationToken)
         {
+            _logger.LogDebug("Sending work report {Id} {EmailAddressCount}", id, request.EmailAddresses.Length);
+
             await _mediator.Send(
                 new SendWorkReportCommand(id, request.EmailAddresses),
                 cancellationToken
@@ -94,6 +111,8 @@ namespace Booliba.Api.Controllers
             [FromRoute] Guid id,
             CancellationToken cancellationToken)
         {
+            _logger.LogDebug("Getting work report {Id}", id);
+
             var response = await _mediator.Send(
                 new GetWorkReportQuery(id),
                 cancellationToken
@@ -103,6 +122,8 @@ namespace Booliba.Api.Controllers
             {
                 return NotFound();
             }
+
+            _logger.LogDebug("Found work report {Id} {DayCount} {EmailAddressCount}", id, response.Result.Days.Length, response.Result.RecipientEmails.Length);
 
             return Ok(
                 new WorkReportResponse(
@@ -116,10 +137,14 @@ namespace Booliba.Api.Controllers
         [HttpGet()]
         public async Task<IActionResult> GetWorkReports(CancellationToken cancellationToken)
         {
+            _logger.LogDebug("Getting work reports");
+
             var response = await _mediator.Send(
                 new GetWorkReportsQuery(),
                 cancellationToken
             );
+
+            _logger.LogDebug("Found {WorkReportCount} work reports", response.Results.Length);
 
             return Ok(
                 response?.Results.Select(wr =>
