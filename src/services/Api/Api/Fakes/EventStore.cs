@@ -1,8 +1,12 @@
 ﻿// This code is under Copyright (C) 2021 of Arkia Consulting SAS all right reserved
 
 using Booliba.Api.Fakes;
+using Booliba.ApplicationCore.AddReport;
 using Booliba.ApplicationCore.Ports;
+using Booliba.ApplicationCore.RemoveDaysFromReport;
+using Booliba.ApplicationCore.RemoveWorkReport;
 using Booliba.ApplicationCore.SendReport;
+using MediatR;
 
 namespace Booliba.Api.Fakes
 {
@@ -10,8 +14,15 @@ namespace Booliba.Api.Fakes
     {
         private readonly ICollection<WorkReportEvent> _events = new List<WorkReportEvent>();
         private readonly ILogger<InMemoryEventStore> _logger;
+        private readonly IMediator _mediator;
 
-        public InMemoryEventStore(ILogger<InMemoryEventStore> logger) => _logger = logger;
+        public InMemoryEventStore(
+            ILogger<InMemoryEventStore> logger,
+            IMediator mediator)
+        {
+            _logger = logger;
+            _mediator = mediator;
+        }
 
         Task<IEnumerable<WorkReportEvent>> IEventStore.Load(Guid workReportId, CancellationToken cancellationToken)
         {
@@ -25,13 +36,24 @@ namespace Booliba.Api.Fakes
                 );
         }
 
-        Task IEventStore.Save(IEnumerable<WorkReportEvent> events, CancellationToken cancellationToken)
+        async Task IEventStore.Save(IEnumerable<WorkReportEvent> events, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Saving {EventCount} events to the event store", events.Count());
 
             events.ToList().ForEach(e => _events.Add(e));
 
-            return Task.CompletedTask;
+            foreach (var @event in events)
+            {
+                await (@event switch
+                {
+                    DaysAdded e => _mediator.Publish(new DaysAddedNotification(e), cancellationToken),
+                    ReportAdded e => _mediator.Publish(new ReportAddedNotification(e), cancellationToken),
+                    DaysRemoved e => _mediator.Publish(new DaysRemovedNotification(e), cancellationToken),
+                    WorkReportRemoved e => _mediator.Publish(new WorkReportRemovedNotification(e), cancellationToken),
+                    WorkReportSent e => _mediator.Publish(new WorkReportSentNotification(e), cancellationToken),
+                    _ => throw new InvalidOperationException($"Cannot handle an event of type '{@event.GetType().Name}'")
+                });
+            }
         }
     }
 
@@ -48,6 +70,16 @@ namespace Booliba.Api.Fakes
             return Task.CompletedTask;
         }
     }
+
+    #region In memory notifications
+
+    internal record DaysAddedNotification(DaysAdded Event) : INotification;
+    internal record ReportAddedNotification(ReportAdded Event) : INotification;
+    internal record DaysRemovedNotification(DaysRemoved Event) : INotification;
+    internal record WorkReportRemovedNotification(WorkReportRemoved Event) : INotification;
+    internal record WorkReportSentNotification(WorkReportSent Event) : INotification;
+
+    #endregion
 }
 
 namespace Microsoft.Extensions.DependencyInjection
