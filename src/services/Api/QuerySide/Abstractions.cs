@@ -6,5 +6,8 @@ namespace Booliba.QuerySide
     {
         Task<WorkReportEntity[]> List(CancellationToken cancellationToken = default);
         Task<WorkReportEntity?> Get(Guid workReportId, CancellationToken cancellationToken = default);
+        Task Add(WorkReportEntity entity, CancellationToken cancellationToken = default);
+        Task Update(WorkReportEntity entity, CancellationToken cancellationToken = default);
+        Task Delete(Guid workReportId, CancellationToken cancellationToken = default);
     }
 }

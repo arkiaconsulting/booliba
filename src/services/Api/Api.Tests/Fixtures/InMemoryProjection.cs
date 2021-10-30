@@ -16,6 +16,8 @@ namespace Booliba.Tests.Fixtures
 
         private readonly ICollection<WorkReportEntity> _workReportEntities = new List<WorkReportEntity>();
 
+        #region IWorkReportProjection
+
         Task<WorkReportEntity[]> IWorkReportProjection.List(CancellationToken cancellationToken) =>
             Task.FromResult(_workReportEntities.ToArray());
 
@@ -24,6 +26,31 @@ namespace Booliba.Tests.Fixtures
                 _workReportEntities
                 .SingleOrDefault(wr => wr.Id == workReportId)
             );
+        Task IWorkReportProjection.Add(WorkReportEntity entity, CancellationToken cancellationToken)
+        {
+            _workReportEntities.Add(entity);
+
+            return Task.CompletedTask;
+        }
+
+        Task IWorkReportProjection.Update(WorkReportEntity entity, CancellationToken cancellationToken)
+        {
+            var existingEntity = _workReportEntities.Single(e => e.Id == entity.Id);
+            _workReportEntities.Remove(existingEntity);
+            _workReportEntities.Add(entity);
+
+            return Task.CompletedTask;
+        }
+
+        Task IWorkReportProjection.Delete(Guid workReportId, CancellationToken cancellationToken)
+        {
+            var existingEntity = _workReportEntities.Single(e => e.Id == workReportId);
+            _workReportEntities.Remove(existingEntity);
+
+            return Task.CompletedTask;
+        }
+
+        #endregion
     }
 }
 

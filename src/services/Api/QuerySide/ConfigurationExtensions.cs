@@ -9,6 +9,7 @@ namespace Booliba.QuerySide
     public static class ConfigurationExtensions
     {
         public static IServiceCollection AddQuerySide(this IServiceCollection services) =>
-            services.AddMediatR(Assembly.GetExecutingAssembly());
+            services.AddMediatR(Assembly.GetExecutingAssembly())
+            .AddTransient<ProjectionService>();
     }
 }

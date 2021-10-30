@@ -11,5 +11,9 @@ namespace Booliba.Tests.Fixtures
         public static T PickRandom<T>(this IEnumerable<T> source) =>
             source.OrderBy(_ => Guid.NewGuid())
             .First();
+
+        public static IEnumerable<T> PickRandom<T>(this IEnumerable<T> source, int count) =>
+            source.OrderBy(_ => Guid.NewGuid())
+            .Take(count);
     }
 }
