@@ -33,7 +33,7 @@ namespace Booliba.Api.Controllers
             AddWorkReportRequest request,
             CancellationToken cancellationToken)
         {
-            _logger.LogDebug("Adding work report {Id} {Name} {DayCount}", id, request.Name, request.Days.Length);
+            using var _ = _logger.BeginScope(new Dictionary<string, string> { { "WorkReportId", id.ToString() }, { "Endpoint", nameof(AddWorkReport) }, { "Side", "Command" } });
 
             await _mediator.Send(
                 new AddWorkReportCommand(id, request.Name, request.Days),
@@ -49,7 +49,7 @@ namespace Booliba.Api.Controllers
             [FromBody] AddWorkReportDaysRequest request,
             CancellationToken cancellationToken)
         {
-            _logger.LogDebug("Adding days to work report {Id} {DayCount}", id, request.Days.Length);
+            using var _ = _logger.BeginScope(new Dictionary<string, string> { { "WorkReportId", id.ToString() }, { "Endpoint", nameof(AddDays) }, { "Side", "Command" } });
 
             await _mediator.Send(
                 new AddDaysCommand(id, request.Days),
@@ -65,7 +65,7 @@ namespace Booliba.Api.Controllers
             [FromBody] RemoveWorkReportDaysRequest request,
             CancellationToken cancellationToken)
         {
-            _logger.LogDebug("Removing days from work report {Id} {DayCount}", id, request.Days.Length);
+            using var _ = _logger.BeginScope(new Dictionary<string, string> { { "WorkReportId", id.ToString() }, { "Endpoint", nameof(RemoveDays) }, { "Side", "Command" } });
 
             await _mediator.Send(
                 new RemoveDaysCommand(id, request.Days),
@@ -80,7 +80,7 @@ namespace Booliba.Api.Controllers
             [FromRoute] Guid id,
             CancellationToken cancellationToken)
         {
-            _logger.LogDebug("Removing work report {Id}", id);
+            using var _ = _logger.BeginScope(new Dictionary<string, string> { { "WorkReportId", id.ToString() }, { "Endpoint", nameof(RemoveWorkReport) }, { "Side", "Command" } });
 
             await _mediator.Send(
                 new RemoveWorkReportCommand(id),
@@ -96,7 +96,7 @@ namespace Booliba.Api.Controllers
             [FromBody] SendWorkReportRequest request,
             CancellationToken cancellationToken)
         {
-            _logger.LogDebug("Sending work report {Id} {EmailAddressCount}", id, request.EmailAddresses.Length);
+            using var _ = _logger.BeginScope(new Dictionary<string, string> { { "WorkReportId", id.ToString() }, { "Endpoint", nameof(SendWorkReport) }, { "Side", "Command" } });
 
             await _mediator.Send(
                 new SendWorkReportCommand(id, request.EmailAddresses),
@@ -111,7 +111,7 @@ namespace Booliba.Api.Controllers
             [FromRoute] Guid id,
             CancellationToken cancellationToken)
         {
-            _logger.LogDebug("Getting work report {Id}", id);
+            using var _ = _logger.BeginScope(new Dictionary<string, string> { { "WorkReportId", id.ToString() }, { "Endpoint", nameof(GetWorkReport) }, { "Side", "Query" } });
 
             var response = await _mediator.Send(
                 new GetWorkReportQuery(id),
@@ -122,8 +122,6 @@ namespace Booliba.Api.Controllers
             {
                 return NotFound();
             }
-
-            _logger.LogDebug("Found work report {Id} {DayCount} {EmailAddressCount}", id, response.Result.Days.Length, response.Result.RecipientEmails.Length);
 
             return Ok(
                 new WorkReportResponse(
@@ -137,14 +135,12 @@ namespace Booliba.Api.Controllers
         [HttpGet()]
         public async Task<IActionResult> GetWorkReports(CancellationToken cancellationToken)
         {
-            _logger.LogDebug("Getting work reports");
+            using var _ = _logger.BeginScope(new Dictionary<string, string> { { "Endpoint", nameof(GetWorkReports) }, { "Side", "Query" } });
 
             var response = await _mediator.Send(
                 new GetWorkReportsQuery(),
                 cancellationToken
             );
-
-            _logger.LogDebug("Found {WorkReportCount} work reports", response.Results.Length);
 
             return Ok(
                 response?.Results.Select(wr =>

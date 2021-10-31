@@ -26,7 +26,7 @@ namespace Booliba.Api.Fakes
 
         Task<IEnumerable<WorkReportEvent>> IEventStore.Load(Guid workReportId, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Loading events from the event store");
+            _logger.LogDebug("Loading events from the event store");
 
             return Task.FromResult(
                 _events
@@ -38,12 +38,12 @@ namespace Booliba.Api.Fakes
 
         async Task IEventStore.Save(IEnumerable<WorkReportEvent> events, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Saving {EventCount} events to the event store", events.Count());
-
             events.ToList().ForEach(e => _events.Add(e));
 
             foreach (var @event in events)
             {
+                _logger.LogDebug("Saving an event of type {EventType} to the event store", @event.GetType().Name);
+
                 await (@event switch
                 {
                     DaysAdded e => _mediator.Publish(new DaysAddedNotification(e), cancellationToken),
@@ -65,7 +65,7 @@ namespace Booliba.Api.Fakes
 
         Task IEmailNotifier.Send(EmailMessage emailMessage, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Notifying {RecipientCount} recipients of work report {WorkReportId}", emailMessage.EmailAddresses.Length, emailMessage.WorkReportId);
+            _logger.LogDebug("Notifying {RecipientCount} recipients of work report {WorkReportId}", emailMessage.EmailAddresses.Length, emailMessage.WorkReportId);
 
             return Task.CompletedTask;
         }

@@ -10,7 +10,7 @@ namespace Booliba.Api.Fakes
 {
     internal class InMemoryProjection : IWorkReportProjection
     {
-        private readonly ConcurrentDictionary<Guid, WorkReportEntity> _workReportEntities = new ConcurrentDictionary<Guid, WorkReportEntity>();
+        private readonly ConcurrentDictionary<Guid, WorkReportEntity> _workReportEntities = new();
 
         #region IWorkReportProjection
 
