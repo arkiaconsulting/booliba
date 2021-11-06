@@ -1,0 +1,40 @@
+﻿@page "/"
+
+@using Booliba.Data
+@inject BoolibaService BoolibaService
+
+<h1>My work reports</h1>
+
+@if (workReports == null)
+{
+	<p><em>Loading...</em></p>
+}
+else
+{
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Name</th>
+				<th>Days</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var workReport in workReports)
+			{
+				<tr>
+					<td>@workReport.Id</td>
+					<td>@workReport.Days.Count()</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+
+@code {
+	private WorkReport[]? workReports = null;
+
+	protected override async Task OnInitializedAsync()
+	{
+		workReports = await BoolibaService.GetWorkReports();
+	}
+}
