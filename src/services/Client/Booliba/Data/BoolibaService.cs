@@ -57,5 +57,14 @@ namespace Booliba.Data
             using var response = await httpClient.SendAsync(httpRequest);
             response.EnsureSuccessStatusCode();
         }
+
+        public async Task Remove(Guid id)
+        {
+            using var httpClient = new HttpClient { BaseAddress = new Uri("https://booliba.azurewebsites.net/api/") };
+            var httpRequest = new HttpRequestMessage(HttpMethod.Delete, $"workreports/{id}");
+
+            using var response = await httpClient.SendAsync(httpRequest);
+            response.EnsureSuccessStatusCode();
+        }
     }
 }
