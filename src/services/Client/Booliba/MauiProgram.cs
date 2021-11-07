@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
+using System;
 
 namespace Booliba
 {
@@ -22,7 +23,9 @@ namespace Booliba
                 });
 
             builder.Services.AddBlazorWebView();
-            builder.Services.AddSingleton<BoolibaService>();
+            builder.Services.AddHttpClient<BoolibaService>(
+                httpClient => httpClient.BaseAddress = new Uri("https://booliba.azurewebsites.net/api/")
+            );
 
             return builder.Build();
         }
