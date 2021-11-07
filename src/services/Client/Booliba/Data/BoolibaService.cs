@@ -27,5 +27,35 @@ namespace Booliba.Data
 
             return workReports!;
         }
+
+        public async Task AddDay(Guid id, DateOnly day)
+        {
+            using var httpClient = new HttpClient { BaseAddress = new Uri("https://booliba.azurewebsites.net/api/") };
+            var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"workreports/{id}/days")
+            {
+                Content = JsonContent.Create(new
+                {
+                    Days = new[] { day }
+                }, options: JsonSerializerOptions)
+            };
+
+            using var response = await httpClient.SendAsync(httpRequest);
+            response.EnsureSuccessStatusCode();
+        }
+
+        public async Task RemoveDay(Guid id, DateOnly day)
+        {
+            using var httpClient = new HttpClient { BaseAddress = new Uri("https://booliba.azurewebsites.net/api/") };
+            var httpRequest = new HttpRequestMessage(HttpMethod.Delete, $"workreports/{id}/days")
+            {
+                Content = JsonContent.Create(new
+                {
+                    Days = new[] { day }
+                }, options: JsonSerializerOptions)
+            };
+
+            using var response = await httpClient.SendAsync(httpRequest);
+            response.EnsureSuccessStatusCode();
+        }
     }
 }
