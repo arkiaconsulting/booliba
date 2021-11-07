@@ -39,7 +39,7 @@
                                                     @foreach (var day in monthDays)
                                                     {
                                                         <th class="@(OnWeekEnd(day.DayOfWeek))">
-                                                            <div class="text-center">@day.ToString("ddd")</div>
+                                                            <button type="button" class="btn btn-sm btn-block text-center px-0" @onclick="() => workReport.Switch(day)"><small>@day.ToString("ddd")</small></button>
                                                         </th>
                                                     }
                                                 </tr>
@@ -47,7 +47,7 @@
                                                     @foreach (var day in monthDays)
                                                     {
                                                         <th class="@(OnWeekEnd(day.DayOfWeek))">
-                                                            <div class="text-center"><small>@day.Day</small></div>
+                                                            <button type="button" class="btn btn-sm btn-block text-center px-0" @onclick="() => workReport.Switch(day)"><small>@day.Day</small></button>
                                                         </th>
                                                     }
                                                 </tr>
@@ -77,7 +77,7 @@
     protected override async Task OnInitializedAsync()
     {
         workReports = (await BoolibaService.GetWorkReports())
-        .Select(wr => new DisplayWorkReportViewModel(wr.Id, wr.Name, wr.Days))
+        .Select(wr => new DisplayWorkReportViewModel(BoolibaService, wr.Id, wr.Name, wr.Days))
         .ToArray();
     }
 
