@@ -20,7 +20,8 @@
                 <div class="card-header container-fluid">
                     <div class="row">
                         <div class="col-md-10">
-                            @(workReport.Name) (@workReport.TotalDayCount)
+                            <span>@workReport.Name</span>
+                            <span class="badge rounded-pill badge-notification bg-primary">@workReport.TotalDayCount</span>
                         </div>
                         <div class="col-md-2 float-right text-right">
                             <button type="button" class="btn btn-warning btn-sm" @onclick="() => Remove(workReport)">X</button>
@@ -30,7 +31,7 @@
                 <div class="card-body">
                     @foreach (var yearDays in workReport.DaysPerYear!)
                     {
-                        <p class="card-text">@yearDays.Key</p>
+                        <p class="card-title">@yearDays.Key</p>
                         <table class="table">
                             <tbody>
                                 @foreach (var months in yearDays.GroupBy(d => d.Month))
@@ -74,17 +75,40 @@
                         </table>
                     }
                 </div>
+                <div class="card-footer">
+                    <div class="row">
+                        <div class="col-md-11">
+                            @foreach (var recipient in workReport.Recipients)
+                            {
+                                <a href="#" class="badge rounded-pill badge-primary" @onclick="() => workReport.RemoveRecipient(recipient)">@recipient</a>
+                            }
+                            <a href="#" class="badge rounded-pill badge-primary" @onclick="() => OpenAddRecipient(workReport)">+</a>
+                        </div>
+                        <div class="col-md-1 float-right text-right">
+                            <button type="button" class="btn btn-primary btn-sm" @onclick="() => workReport.Send()"><i class="fas fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+                </div>
             </div>
         }
     }
 </div>
+@if (_addRecipientDialogOpen)
+{
+    <Booliba.Components.ModalDialog Title="Add a recipient"
+                                WorkReportId=_workReportId!
+                                OnEmailAdded="@OnEmailAdded" />
+}
+
 @code {
     private ICollection<DisplayWorkReportViewModel>? workReports = null;
+    private bool _addRecipientDialogOpen;
+    private Guid _workReportId = Guid.Empty;
 
     protected override async Task OnInitializedAsync()
     {
         workReports = (await BoolibaService.GetWorkReports())
-        .Select(wr => new DisplayWorkReportViewModel(BoolibaService, wr.Id, wr.Name, wr.Days))
+        .Select(wr => new DisplayWorkReportViewModel(BoolibaService, wr.Id, wr.Name, wr.Days, wr.Recipients))
         .ToList();
     }
 
@@ -98,6 +122,23 @@
     {
         return Enumerable.Range(1, DateTime.DaysInMonth(year, month))
             .Select(dayNumber => new DateOnly(year, month, dayNumber));
+    }
+
+    private void OpenAddRecipient(DisplayWorkReportViewModel workReport)
+    {
+        _workReportId = workReport.Id;
+        _addRecipientDialogOpen = true;
+    }
+
+    private void OnEmailAdded(string? email)
+    {
+        if (email != null)
+        {
+            var workReport = workReports!.Single(wr => wr.Id == _workReportId);
+            workReport.AddRecipient(email);
+        }
+
+        _addRecipientDialogOpen = false;
     }
 
     private string OnWeekEnd(DayOfWeek dayOfWeek) =>
