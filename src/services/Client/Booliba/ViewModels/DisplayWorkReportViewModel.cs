@@ -8,26 +8,30 @@ using System.Threading.Tasks;
 
 namespace Booliba.ViewModels
 {
-    internal class DisplayWorkReportViewModel
+    public class DisplayWorkReportViewModel
     {
         public Guid Id { get; private set; }
         public string Name { get; private set; } = string.Empty;
         public IEnumerable<IGrouping<int, DateOnly>>? DaysPerYear { get; private set; } = default;
         public int TotalDayCount { get; private set; }
+        public IEnumerable<string> Recipients => _recipients;
 
         private readonly ICollection<DateOnly> _days;
+        private readonly HashSet<string> _recipients;
         private readonly BoolibaService _boolibaService;
 
         public DisplayWorkReportViewModel(
             BoolibaService boolibaService,
             Guid id,
             string name,
-            IEnumerable<DateOnly> days)
+            IEnumerable<DateOnly> days,
+            IEnumerable<string> recipients)
         {
             _boolibaService = boolibaService;
             Id = id;
             Name = name;
             _days = days.ToList();
+            _recipients = new HashSet<string>(recipients);
             TotalDayCount = days.Count();
             UpdateExposedDayGroup();
         }
@@ -51,7 +55,19 @@ namespace Booliba.ViewModels
         public async Task Remove() =>
             await _boolibaService.Remove(Id);
 
-        private void UpdateExposedDayGroup() =>
+        public void RemoveRecipient(string recipient) =>
+            _recipients.Remove(recipient);
+
+        public void AddRecipient(string recipient) =>
+            _recipients.Add(recipient);
+
+        public async Task Send() =>
+            await _boolibaService.Send(Id, _recipients);
+
+        private void UpdateExposedDayGroup()
+        {
             DaysPerYear = new List<IGrouping<int, DateOnly>>(_days.GroupBy(d => d.Year));
+            TotalDayCount = _days.Count;
+        }
     }
 }

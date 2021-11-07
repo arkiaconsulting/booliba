@@ -1,6 +1,7 @@
 // This code is under Copyright (C) 2021 of Arkia Consulting SAS all right reserved
 
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -62,6 +63,21 @@ namespace Booliba.Data
         {
             using var httpClient = new HttpClient { BaseAddress = new Uri("https://booliba.azurewebsites.net/api/") };
             var httpRequest = new HttpRequestMessage(HttpMethod.Delete, $"workreports/{id}");
+
+            using var response = await httpClient.SendAsync(httpRequest);
+            response.EnsureSuccessStatusCode();
+        }
+
+        public async Task Send(Guid id, IEnumerable<string> emails)
+        {
+            using var httpClient = new HttpClient { BaseAddress = new Uri("https://booliba.azurewebsites.net/api/") };
+            var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"workreports/{id}/send")
+            {
+                Content = JsonContent.Create(new
+                {
+                    EmailAddresses = emails
+                }, options: JsonSerializerOptions)
+            };
 
             using var response = await httpClient.SendAsync(httpRequest);
             response.EnsureSuccessStatusCode();

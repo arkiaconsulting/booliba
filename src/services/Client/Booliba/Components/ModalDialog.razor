@@ -1,0 +1,47 @@
+﻿<div class="modal fade show" id="recipientModal" role="dialog" aria-modal="true" style="display:block;">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">@Title</h5>
+        <button type="button" class="close" @onclick="@Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text" id="basic-addon1">Email</span>
+          </div>
+          <input type="text" class="form-control" @bind="Email" placeholder="Email" aria-label="Email" aria-describedby="basic-addon1">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" @onclick="@Close">Cancel</button>
+        <button type="button" class="btn btn-primary" @onclick="@Add">Add</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter]
+    public Guid WorkReportId { get; set; } = Guid.Empty;
+
+    [Parameter]
+    public EventCallback<string?> OnEmailAdded { get; set; }
+
+    private string Email = string.Empty;
+
+    private async Task Add()
+    {
+        await OnEmailAdded.InvokeAsync(Email);
+    }
+
+    private async Task Close()
+    {
+        await OnEmailAdded.InvokeAsync(null);
+    }
+}
