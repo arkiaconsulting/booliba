@@ -1,40 +1,92 @@
 ﻿@page "/"
 
 @using Booliba.Data
+@using System.Globalization
 @inject BoolibaService BoolibaService
 
-<h1>My work reports</h1>
+<div class="container-fluid">
 
-@if (workReports == null)
-{
-	<p><em>Loading...</em></p>
-}
-else
-{
-	<table class="table">
-		<thead>
-			<tr>
-				<th>Name</th>
-				<th>Days</th>
-			</tr>
-		</thead>
-		<tbody>
-			@foreach (var workReport in workReports)
-			{
-				<tr>
-					<td>@workReport.Id</td>
-					<td>@workReport.Days.Count()</td>
-				</tr>
-			}
-		</tbody>
-	</table>
-}
+    <h1>My work reports</h1>
 
+    @if (workReports == null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        @foreach (var workReport in workReports)
+        {
+            <div class="card">
+                <div class="card-header">
+                    @(workReport.Name) (@workReport.TotalDayCount)
+                </div>
+                <div class="card-body">
+                    @foreach (var yearDays in workReport.DaysPerYear)
+                    {
+                        <p class="card-text">@yearDays.Key</p>
+                        <table class="table">
+                            <tbody>
+                                @foreach (var months in yearDays.GroupBy(d => d.Month))
+                                {
+                                    <tr>
+                                        <th>@CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(months.Key)</th>
+                                        <table class="table table-sm">
+                                            <thead class="thead-light">
+                                                @{
+                                                    var monthDays = GetMonthDays(yearDays.Key, months.Key);
+                                                }
+                                                <tr>
+                                                    @foreach (var day in monthDays)
+                                                    {
+                                                        <th class="@(OnWeekEnd(day.DayOfWeek))">
+                                                            <div class="text-center">@day.ToString("ddd")</div>
+                                                        </th>
+                                                    }
+                                                </tr>
+                                                <tr>
+                                                    @foreach (var day in monthDays)
+                                                    {
+                                                        <th class="@(OnWeekEnd(day.DayOfWeek))">
+                                                            <div class="text-center"><small>@day.Day</small></div>
+                                                        </th>
+                                                    }
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    @foreach (var day in monthDays)
+                                                    {
+                                                        <td class="@(months.Contains(day) ? "table-primary" : "table-default")"><div style="min-height: 25px" /></td>
+                                                    }
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>
 @code {
-	private WorkReport[]? workReports = null;
+    private DisplayWorkReportViewModel[]? workReports = null;
 
-	protected override async Task OnInitializedAsync()
-	{
-		workReports = await BoolibaService.GetWorkReports();
-	}
+    protected override async Task OnInitializedAsync()
+    {
+        workReports = (await BoolibaService.GetWorkReports())
+        .Select(wr => new DisplayWorkReportViewModel(wr.Id, wr.Name, wr.Days))
+        .ToArray();
+    }
+
+    private IEnumerable<DateOnly> GetMonthDays(int year, int month)
+    {
+        return Enumerable.Range(1, DateTime.DaysInMonth(year, month))
+            .Select(dayNumber => new DateOnly(year, month, dayNumber));
+    }
+
+    private string OnWeekEnd(DayOfWeek dayOfWeek) =>
+        new[] { DayOfWeek.Saturday, DayOfWeek.Sunday }.Contains(dayOfWeek) ? "text-light bg-secondary" : string.Empty;
 }
