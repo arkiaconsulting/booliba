@@ -48,6 +48,9 @@ namespace Booliba.ViewModels
             UpdateExposedDayGroup();
         }
 
+        public async Task Remove() =>
+            await _boolibaService.Remove(Id);
+
         private void UpdateExposedDayGroup() =>
             DaysPerYear = new List<IGrouping<int, DateOnly>>(_days.GroupBy(d => d.Year));
     }

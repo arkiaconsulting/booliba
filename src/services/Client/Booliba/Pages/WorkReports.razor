@@ -17,11 +17,18 @@
         @foreach (var workReport in workReports)
         {
             <div class="card">
-                <div class="card-header">
-                    @(workReport.Name) (@workReport.TotalDayCount)
+                <div class="card-header container-fluid">
+                    <div class="row">
+                        <div class="col-md-10">
+                            @(workReport.Name) (@workReport.TotalDayCount)
+                        </div>
+                        <div class="col-md-2 float-right text-right">
+                            <button type="button" class="btn btn-warning btn-sm" @onclick="() => Remove(workReport)">X</button>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-body">
-                    @foreach (var yearDays in workReport.DaysPerYear)
+                    @foreach (var yearDays in workReport.DaysPerYear!)
                     {
                         <p class="card-text">@yearDays.Key</p>
                         <table class="table">
@@ -72,13 +79,19 @@
     }
 </div>
 @code {
-    private DisplayWorkReportViewModel[]? workReports = null;
+    private ICollection<DisplayWorkReportViewModel>? workReports = null;
 
     protected override async Task OnInitializedAsync()
     {
         workReports = (await BoolibaService.GetWorkReports())
         .Select(wr => new DisplayWorkReportViewModel(BoolibaService, wr.Id, wr.Name, wr.Days))
-        .ToArray();
+        .ToList();
+    }
+
+    private async Task Remove(DisplayWorkReportViewModel workReport)
+    {
+        await workReport.Remove();
+        workReports?.Remove(workReport);
     }
 
     private IEnumerable<DateOnly> GetMonthDays(int year, int month)
