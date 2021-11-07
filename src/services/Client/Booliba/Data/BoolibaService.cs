@@ -15,13 +15,17 @@ namespace Booliba.Data
         {
             PropertyNameCaseInsensitive = true
         };
+        private readonly HttpClient _httpClient;
 
-        public BoolibaService() => JsonSerializerOptions.Converters.Add(new DateOnlyConverter());
+        public BoolibaService(HttpClient httpClient)
+        {
+            JsonSerializerOptions.Converters.Add(new DateOnlyConverter());
+            _httpClient = httpClient;
+        }
 
         public async Task<WorkReport[]> GetWorkReports()
         {
-            using var httpClient = new HttpClient { BaseAddress = new Uri("https://booliba.azurewebsites.net/api/") };
-            using var response = await httpClient.GetAsync("workreports");
+            using var response = await _httpClient.GetAsync("workreports");
             response.EnsureSuccessStatusCode();
 
             var workReports = await response.Content.ReadFromJsonAsync<WorkReport[]>(JsonSerializerOptions);
@@ -31,7 +35,6 @@ namespace Booliba.Data
 
         public async Task AddDay(Guid id, DateOnly day)
         {
-            using var httpClient = new HttpClient { BaseAddress = new Uri("https://booliba.azurewebsites.net/api/") };
             var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"workreports/{id}/days")
             {
                 Content = JsonContent.Create(new
@@ -40,13 +43,12 @@ namespace Booliba.Data
                 }, options: JsonSerializerOptions)
             };
 
-            using var response = await httpClient.SendAsync(httpRequest);
+            using var response = await _httpClient.SendAsync(httpRequest);
             response.EnsureSuccessStatusCode();
         }
 
         public async Task RemoveDay(Guid id, DateOnly day)
         {
-            using var httpClient = new HttpClient { BaseAddress = new Uri("https://booliba.azurewebsites.net/api/") };
             var httpRequest = new HttpRequestMessage(HttpMethod.Delete, $"workreports/{id}/days")
             {
                 Content = JsonContent.Create(new
@@ -55,22 +57,20 @@ namespace Booliba.Data
                 }, options: JsonSerializerOptions)
             };
 
-            using var response = await httpClient.SendAsync(httpRequest);
+            using var response = await _httpClient.SendAsync(httpRequest);
             response.EnsureSuccessStatusCode();
         }
 
         public async Task Remove(Guid id)
         {
-            using var httpClient = new HttpClient { BaseAddress = new Uri("https://booliba.azurewebsites.net/api/") };
             var httpRequest = new HttpRequestMessage(HttpMethod.Delete, $"workreports/{id}");
 
-            using var response = await httpClient.SendAsync(httpRequest);
+            using var response = await _httpClient.SendAsync(httpRequest);
             response.EnsureSuccessStatusCode();
         }
 
         public async Task Send(Guid id, IEnumerable<string> emails)
         {
-            using var httpClient = new HttpClient { BaseAddress = new Uri("https://booliba.azurewebsites.net/api/") };
             var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"workreports/{id}/send")
             {
                 Content = JsonContent.Create(new
@@ -79,7 +79,7 @@ namespace Booliba.Data
                 }, options: JsonSerializerOptions)
             };
 
-            using var response = await httpClient.SendAsync(httpRequest);
+            using var response = await _httpClient.SendAsync(httpRequest);
             response.EnsureSuccessStatusCode();
         }
     }
