@@ -121,7 +121,7 @@
                             <a href="#" class="badge rounded-pill badge-primary" @onclick="() => OpenAddRecipient(workReport)">+</a>
                         </div>
                         <div class="col-md-1 float-right text-right">
-                            <button type="button" class="btn btn-primary btn-sm" @onclick="() => workReport.Send()"><i class="fas fa-paper-plane"></i></button>
+                            <button type="button" class="btn btn-primary btn-sm" @onclick="() => workReport.Send()" disabled="@(!workReport.Recipients.Any())"><i class="fas fa-paper-plane"></i></button>
                         </div>
                     </div>
                 </div>
