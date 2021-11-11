@@ -22,6 +22,10 @@ namespace Booliba.Pages
         private bool _addRecipientDialogOpen;
         private Guid _workReportId = Guid.Empty;
         private string _newWorkReportName = string.Empty;
+        private int _newYear = DateTime.Now.Year;
+        private int _newMonth = DateTime.Now.Month;
+
+        private readonly int[] _availableYears = Enumerable.Range(DateTime.Now.Year - 1, 1).Reverse().ToArray();
 
         protected override async Task OnInitializedAsync()
         {
@@ -34,7 +38,32 @@ namespace Booliba.Pages
         {
             await workReport.Remove();
             _workReports?.Remove(workReport);
-        }        
+        }
+
+        private async Task Fill(DisplayWorkReportViewModel workReport, int year, int month)
+        {
+            await workReport.Fill(year, month);
+        }
+
+        private async Task Empty(DisplayWorkReportViewModel workReport, int year, int month)
+        {
+            await workReport.Empty(year, month);
+        }
+
+        private async Task AddMonth(DisplayWorkReportViewModel workReport)
+        {
+            if(workReport.DaysPerYear!.Any(y => y.Key == _newYear)
+                && workReport.DaysPerYear!.Single(y => y.Key == _newYear).Any(m => m.Month == _newMonth))
+            {
+                return;
+            }
+            
+            await workReport.AddMonth(_newYear, _newMonth);
+        }
+
+        private void ChangeNewYear(int year) => _newYear = year;
+
+        private void ChangeNewMonth(int month) => _newMonth = month;
 
         private void OpenAddRecipient(DisplayWorkReportViewModel workReport)
         {
@@ -60,13 +89,7 @@ namespace Booliba.Pages
             await BoolibaService.CreateWorkReport(newGuid, _newWorkReportName, initialDays);
             _workReports?.Insert(0, new DisplayWorkReportViewModel(BoolibaService, newGuid, _newWorkReportName, initialDays, Array.Empty<string>()));
             _newWorkReportName = string.Empty;
-        }
-
-        private static IEnumerable<DateOnly> GetMonthDays(int year, int month)
-        {
-            return Enumerable.Range(1, DateTime.DaysInMonth(year, month))
-                .Select(dayNumber => new DateOnly(year, month, dayNumber));
-        }
+        }        
 
         private static string OnWeekEnd(DayOfWeek dayOfWeek) =>
             new[] { DayOfWeek.Saturday, DayOfWeek.Sunday }.Contains(dayOfWeek) ? "text-light bg-secondary" : string.Empty;

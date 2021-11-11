@@ -34,9 +34,9 @@ namespace Booliba.Data
             return workReports!;
         }
 
-        public async Task AddDay(Guid id, DateOnly day)
+        public async Task AddDay(Guid workReportId, DateOnly day)
         {
-            var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"workreports/{id}/days")
+            var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"workreports/{workReportId}/days")
             {
                 Content = JsonContent.Create(new
                 {
@@ -48,9 +48,23 @@ namespace Booliba.Data
             response.EnsureSuccessStatusCode();
         }
 
-        public async Task RemoveDay(Guid id, DateOnly day)
+        public async Task AddDays(Guid workReportId, DateOnly[] days)
         {
-            var httpRequest = new HttpRequestMessage(HttpMethod.Delete, $"workreports/{id}/days")
+            var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"workreports/{workReportId}/days")
+            {
+                Content = JsonContent.Create(new
+                {
+                    Days = days
+                }, options: JsonSerializerOptions)
+            };
+
+            using var response = await _httpClient.SendAsync(httpRequest);
+            response.EnsureSuccessStatusCode();
+        }
+
+        public async Task RemoveDay(Guid workReportId, DateOnly day)
+        {
+            var httpRequest = new HttpRequestMessage(HttpMethod.Delete, $"workreports/{workReportId}/days")
             {
                 Content = JsonContent.Create(new
                 {
@@ -62,17 +76,31 @@ namespace Booliba.Data
             response.EnsureSuccessStatusCode();
         }
 
-        public async Task Remove(Guid id)
+        public async Task RemoveDays(Guid workReportId, DateOnly[] days)
         {
-            var httpRequest = new HttpRequestMessage(HttpMethod.Delete, $"workreports/{id}");
+            var httpRequest = new HttpRequestMessage(HttpMethod.Delete, $"workreports/{workReportId}/days")
+            {
+                Content = JsonContent.Create(new
+                {
+                    Days = days
+                }, options: JsonSerializerOptions)
+            };
 
             using var response = await _httpClient.SendAsync(httpRequest);
             response.EnsureSuccessStatusCode();
         }
 
-        public async Task Send(Guid id, IEnumerable<string> emails)
+        public async Task Remove(Guid workReportId)
         {
-            var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"workreports/{id}/send")
+            var httpRequest = new HttpRequestMessage(HttpMethod.Delete, $"workreports/{workReportId}");
+
+            using var response = await _httpClient.SendAsync(httpRequest);
+            response.EnsureSuccessStatusCode();
+        }
+
+        public async Task Send(Guid workReportId, IEnumerable<string> emails)
+        {
+            var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"workreports/{workReportId}/send")
             {
                 Content = JsonContent.Create(new
                 {
@@ -84,9 +112,9 @@ namespace Booliba.Data
             response.EnsureSuccessStatusCode();
         }
 
-        public async Task CreateWorkReport(Guid id, string name, IEnumerable<DateOnly> days)
+        public async Task CreateWorkReport(Guid workReportId, string name, IEnumerable<DateOnly> days)
         {
-            var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"workreports/{id}")
+            var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"workreports/{workReportId}")
             {
                 Content = JsonContent.Create(new
                 {
