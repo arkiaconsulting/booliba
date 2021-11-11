@@ -27,11 +27,32 @@
             <div class="card">
                 <div class="card-header container-fluid">
                     <div class="row">
-                        <div class="col-md-10">
+                        <div class="col-md-8">
                             <span>@workReport.Name</span>
                             <span class="badge rounded-pill badge-notification bg-primary">@workReport.TotalDayCount</span>
                         </div>
-                        <div class="col-md-2 float-right text-right">
+                        <div class="col-md-4 float-right text-right">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">@_newYear</button>
+                                <div class="dropdown-menu">
+                                    @foreach (var year in _availableYears)
+                                    {
+                                        <a class="dropdown-item" href="#" @onclick="() => ChangeNewYear(year)">@year</a>
+                                    }
+                                </div>
+                            </div>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">@CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(_newMonth)</button>
+                                <div class="dropdown-menu">
+                                    @foreach (var month in Enumerable.Range(1, 12))
+                                    {
+                                        <a class="dropdown-item" href="#" @onclick="() => ChangeNewMonth(month)">@CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(month)</a>
+                                    }
+                                </div>
+                            </div>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-primary btn-sm" @onclick="() => AddMonth(workReport)"><i class="fas fa-plus"></i></button>
+                            </div>
                             <button type="button" class="btn btn-warning btn-sm" @onclick="() => Remove(workReport)"><i class="fas fa-trash-alt"></i></button>
                         </div>
                     </div>
@@ -45,11 +66,18 @@
                                 @foreach (var months in yearDays.GroupBy(d => d.Month))
                                 {
                                     <tr>
-                                        <th>@CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(months.Key)</th>
+                                        <th>
+                                            <div>
+                                                @CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(months.Key)
+                                                <button type="button" class="btn btn-warning btn-sm" @onclick="() => Fill(workReport, yearDays.Key, months.Key)"><i class="fas fa-fill-drip"></i></button>
+                                                <button type="button" class="btn btn-warning btn-sm" @onclick="() => Empty(workReport, yearDays.Key, months.Key)"><i class="fas fa-battery-empty"></i></button>
+
+                                            </div>
+                                        </th>
                                         <table class="table table-sm">
                                             <thead class="thead-light">
                                                 @{
-                                                    var monthDays = WorkReports.GetMonthDays(yearDays.Key, months.Key);
+                                                    var monthDays = WorkReportHelpers.GetMonthDays(yearDays.Key, months.Key);
                                                 }
                                                 <tr>
                                                     @foreach (var day in monthDays)

@@ -16,7 +16,7 @@ namespace Booliba.ViewModels
         public int TotalDayCount { get; private set; }
         public IEnumerable<string> Recipients => _recipients;
 
-        private readonly ICollection<DateOnly> _days;
+        private readonly HashSet<DateOnly> _days;
         private readonly HashSet<string> _recipients;
         private readonly BoolibaService _boolibaService;
 
@@ -30,7 +30,7 @@ namespace Booliba.ViewModels
             _boolibaService = boolibaService;
             Id = id;
             Name = name;
-            _days = days.ToList();
+            _days = days.ToHashSet();
             _recipients = new HashSet<string>(recipients);
             TotalDayCount = days.Count();
             UpdateExposedDayGroup();
@@ -46,6 +46,50 @@ namespace Booliba.ViewModels
             else
             {
                 await _boolibaService.AddDay(Id, day);
+                _days.Add(day);
+            }
+
+            UpdateExposedDayGroup();
+        }
+
+        internal async Task Fill(int year, int month)
+        {
+            var monthDaysWithoutWeekEndDays = WorkReportHelpers.GetMonthDays(year, month)
+                .Where(d => !new[] { DayOfWeek.Saturday, DayOfWeek.Sunday }.Contains(d.DayOfWeek));
+
+            await _boolibaService.AddDays(Id, monthDaysWithoutWeekEndDays.ToArray());
+
+            foreach (var dayToAdd in monthDaysWithoutWeekEndDays)
+            {
+                _days.Add(dayToAdd);
+            }
+
+            UpdateExposedDayGroup();
+        }
+
+        internal async Task Empty(int year, int month)
+        {
+            var daysToRemove = WorkReportHelpers.GetMonthDays(year, month);
+
+            await _boolibaService.RemoveDays(Id, daysToRemove.ToArray());
+
+            foreach (var day in daysToRemove)
+            {
+                _days.Remove(day);
+            }
+
+            UpdateExposedDayGroup();
+        }
+
+        internal async Task AddMonth(int year, int month)
+        {
+            var monthDaysWithoutWeekEndDays = WorkReportHelpers.GetMonthDays(year, month)
+                .Where(d => !new[] { DayOfWeek.Saturday, DayOfWeek.Sunday }.Contains(d.DayOfWeek));
+
+            await _boolibaService.AddDays(Id, monthDaysWithoutWeekEndDays.ToArray());
+
+            foreach (var day in monthDaysWithoutWeekEndDays)
+            {
                 _days.Add(day);
             }
 
