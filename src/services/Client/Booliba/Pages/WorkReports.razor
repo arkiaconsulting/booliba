@@ -2,19 +2,27 @@
 
 @using Booliba.Data
 @using System.Globalization
-@inject BoolibaService BoolibaService
 
 <div class="container-fluid">
 
     <h1>My work reports</h1>
 
-    @if (workReports == null)
+    @if (_workReports == null)
     {
         <p><em>Loading...</em></p>
     }
     else
     {
-        @foreach (var workReport in workReports)
+        <div>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text" id="basic-addon1">Work Report Name</span>
+                </div>
+                <input type="text" class="form-control" @bind="_newWorkReportName" placeholder="Name" aria-label="Name" aria-describedby="basic-addon1">
+                <button type="button" class="btn btn-warning btn-sm" @onclick="() => CreateWorkReport()" disabled="@(string.IsNullOrWhiteSpace(_newWorkReportName))"><i class="fas fa-plus-circle"></i></button>
+            </div>
+        </div>
+        @foreach (var workReport in _workReports)
         {
             <div class="card">
                 <div class="card-header container-fluid">
@@ -41,12 +49,12 @@
                                         <table class="table table-sm">
                                             <thead class="thead-light">
                                                 @{
-                                                    var monthDays = GetMonthDays(yearDays.Key, months.Key);
+                                                    var monthDays = WorkReports.GetMonthDays(yearDays.Key, months.Key);
                                                 }
                                                 <tr>
                                                     @foreach (var day in monthDays)
                                                     {
-                                                        <th class="@(OnWeekEnd(day.DayOfWeek))">
+                                                        <th class="@(WorkReports.OnWeekEnd(day.DayOfWeek))">
                                                             <button type="button" class="btn btn-sm btn-block text-center px-0" @onclick="() => workReport.Switch(day)"><small>@day.ToString("ddd")</small></button>
                                                         </th>
                                                     }
@@ -54,7 +62,7 @@
                                                 <tr>
                                                     @foreach (var day in monthDays)
                                                     {
-                                                        <th class="@(OnWeekEnd(day.DayOfWeek))">
+                                                        <th class="@(WorkReports.OnWeekEnd(day.DayOfWeek))">
                                                             <button type="button" class="btn btn-sm btn-block text-center px-0" @onclick="() => workReport.Switch(day)"><small>@day.Day</small></button>
                                                         </th>
                                                     }
@@ -93,54 +101,10 @@
         }
     }
 </div>
+
 @if (_addRecipientDialogOpen)
 {
     <Booliba.Components.ModalDialog Title="Add a recipient"
                                 WorkReportId=_workReportId!
                                 OnEmailAdded="@OnEmailAdded" />
-}
-
-@code {
-    private ICollection<DisplayWorkReportViewModel>? workReports = null;
-    private bool _addRecipientDialogOpen;
-    private Guid _workReportId = Guid.Empty;
-
-    protected override async Task OnInitializedAsync()
-    {
-        workReports = (await BoolibaService.GetWorkReports())
-        .Select(wr => new DisplayWorkReportViewModel(BoolibaService, wr.Id, wr.Name, wr.Days, wr.Recipients))
-        .ToList();
-    }
-
-    private async Task Remove(DisplayWorkReportViewModel workReport)
-    {
-        await workReport.Remove();
-        workReports?.Remove(workReport);
-    }
-
-    private IEnumerable<DateOnly> GetMonthDays(int year, int month)
-    {
-        return Enumerable.Range(1, DateTime.DaysInMonth(year, month))
-            .Select(dayNumber => new DateOnly(year, month, dayNumber));
-    }
-
-    private void OpenAddRecipient(DisplayWorkReportViewModel workReport)
-    {
-        _workReportId = workReport.Id;
-        _addRecipientDialogOpen = true;
-    }
-
-    private void OnEmailAdded(string? email)
-    {
-        if (email != null)
-        {
-            var workReport = workReports!.Single(wr => wr.Id == _workReportId);
-            workReport.AddRecipient(email);
-        }
-
-        _addRecipientDialogOpen = false;
-    }
-
-    private string OnWeekEnd(DayOfWeek dayOfWeek) =>
-        new[] { DayOfWeek.Saturday, DayOfWeek.Sunday }.Contains(dayOfWeek) ? "text-light bg-secondary" : string.Empty;
 }

@@ -21,7 +21,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{41DBA594
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuerySide", "Api\QuerySide\QuerySide.csproj", "{C48E8F8D-BEA9-4A6C-B7B7-C9523D22D82F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Booliba", "Client\Booliba\Booliba.csproj", "{8ADB6BC6-9201-42F3-B41F-4D328E1C192C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Booliba", "Client\Booliba\Booliba.csproj", "{8ADB6BC6-9201-42F3-B41F-4D328E1C192C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
