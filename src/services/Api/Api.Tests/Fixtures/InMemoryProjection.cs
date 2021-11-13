@@ -10,11 +10,13 @@ using System.Threading.Tasks;
 
 namespace Booliba.Tests.Fixtures
 {
-    internal class InMemoryProjection : IWorkReportProjection
+    internal class InMemoryProjection : IWorkReportProjection, ICustomerProjection
     {
         public ICollection<WorkReportEntity> WorkReports => _workReportEntities;
+        public ICollection<CustomerEntity> Customers => _customerEntities;
 
         private readonly ICollection<WorkReportEntity> _workReportEntities = new List<WorkReportEntity>();
+        private readonly ICollection<CustomerEntity> _customerEntities = new List<CustomerEntity>();
 
         #region IWorkReportProjection
 
@@ -51,6 +53,28 @@ namespace Booliba.Tests.Fixtures
         }
 
         #endregion
+
+        #region ICustomerProjection
+
+        Task ICustomerProjection.Add(CustomerEntity entity, CancellationToken cancellationToken)
+        {
+            _customerEntities.Add(entity);
+
+            return Task.CompletedTask;
+        }
+
+        Task ICustomerProjection.Delete(Guid customerId, CancellationToken cancellationToken)
+        {
+            var existingEntity = _customerEntities.Single(e => e.Id == customerId);
+            _customerEntities.Remove(existingEntity);
+
+            return Task.CompletedTask;
+        }
+
+        Task<CustomerEntity[]> ICustomerProjection.List(CancellationToken cancellationToken) =>
+            Task.FromResult(_customerEntities.ToArray());
+
+        #endregion
     }
 }
 
@@ -59,6 +83,7 @@ namespace Microsoft.Extensions.DependencyInjection
     internal static partial class ConfigurationExtensions
     {
         public static IServiceCollection AddInMemoryProjection(this IServiceCollection services) =>
-            services.AddSingleton<IWorkReportProjection, InMemoryProjection>();
+            services.AddSingleton<IWorkReportProjection, InMemoryProjection>()
+            .AddSingleton<ICustomerProjection, InMemoryProjection>();
     }
 }

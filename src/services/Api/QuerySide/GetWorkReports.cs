@@ -7,7 +7,6 @@ namespace Booliba.QuerySide
 {
     public record GetWorkReportsQuery : IRequest<GetWorkReportsResponse>;
     public record GetWorkReportsResponse(WorkReportEntity[] Results);
-    public record WorkReportEntity(Guid Id, string Name, DateOnly[] Days, string[] RecipientEmails);
 
     internal class GetWorkReportsQueryHandler : IRequestHandler<GetWorkReportsQuery, GetWorkReportsResponse>
     {

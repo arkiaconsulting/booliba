@@ -2,6 +2,7 @@
 
 using Booliba.Api.Fakes;
 using Booliba.ApplicationCore.AddReport;
+using Booliba.ApplicationCore.Customers;
 using Booliba.ApplicationCore.Ports;
 using Booliba.ApplicationCore.RemoveDaysFromReport;
 using Booliba.ApplicationCore.RemoveWorkReport;
@@ -51,6 +52,8 @@ namespace Booliba.Api.Fakes
                     DaysRemoved e => _mediator.Publish(new DaysRemovedNotification(e), cancellationToken),
                     WorkReportRemoved e => _mediator.Publish(new WorkReportRemovedNotification(e), cancellationToken),
                     WorkReportSent e => _mediator.Publish(new WorkReportSentNotification(e), cancellationToken),
+                    CustomerAdded e => _mediator.Publish(new CustomerAddedNotification(e), cancellationToken),
+                    CustomerRemoved e => _mediator.Publish(new CustomerRemovedNotification(e), cancellationToken),
                     _ => throw new InvalidOperationException($"Cannot handle an event of type '{@event.GetType().Name}'")
                 });
             }
@@ -78,6 +81,8 @@ namespace Booliba.Api.Fakes
     internal record DaysRemovedNotification(DaysRemoved Event) : INotification;
     internal record WorkReportRemovedNotification(WorkReportRemoved Event) : INotification;
     internal record WorkReportSentNotification(WorkReportSent Event) : INotification;
+    internal record CustomerAddedNotification(CustomerAdded Event) : INotification;
+    internal record CustomerRemovedNotification(CustomerRemoved Event) : INotification;
 
     #endregion
 }

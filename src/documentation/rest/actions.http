@@ -1,7 +1,7 @@
 @id = f8b7fcb0-98c9-4ab5-bcb7-45f4f354916a
 
 # @name addWorkReport
-POST {{base-address}}/workreports/{{id}} HTTP/1.1
+POST {{base-address}}/workreports/{{id}} HTTP/2.0
 Content-Type: application/json
 
 {
@@ -13,7 +13,7 @@ Content-Type: application/json
 
 ###
 
-POST {{base-address}}/workreports/{{id}}/days HTTP/1.1
+POST {{base-address}}/workreports/{{id}}/days HTTP/2.0
 Content-Type: application/json
 
 {
@@ -27,7 +27,7 @@ Content-Type: application/json
 
 ###
 
-DELETE {{base-address}}/workreports/{{id}}/days HTTP/1.1
+DELETE {{base-address}}/workreports/{{id}}/days HTTP/2.0
 Content-Type: application/json
 
 {
@@ -38,7 +38,7 @@ Content-Type: application/json
 
 ###
 
-POST {{base-address}}/workreports/{{id}}/send HTTP/1.1
+POST {{base-address}}/workreports/{{id}}/send HTTP/2.0
 Content-Type: application/json
 
 {
@@ -50,12 +50,33 @@ Content-Type: application/json
 
 ###
 
-DELETE {{base-address}}/workreports/{{id}} HTTP/1.1
+DELETE {{base-address}}/workreports/{{id}} HTTP/2.0
 
 ###
 
-GET {{base-address}}/workreports/{{id}} HTTP/1.1
+GET {{base-address}}/workreports/{{id}} HTTP/2.0
 
 ###
 
-GET {{base-address}}/workreports HTTP/1.1
+GET {{base-address}}/workreports HTTP/2.0
+
+###
+
+@customerId = f8b7fcb0-98c9-4ab5-bcb7-45f4f354916b
+
+# @name addCustomer
+POST {{base-address}}/customers/{{customerId}} HTTP/2.0
+Content-Type: application/json
+
+{
+    "name": "name-{{$guid}}"
+}
+
+###
+
+# @name removeCustomer
+DELETE {{base-address}}/customers/{{customerId}} HTTP/2.0
+
+###
+
+GET {{base-address}}/customers HTTP/2.0

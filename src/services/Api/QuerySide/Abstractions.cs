@@ -10,4 +10,11 @@ namespace Booliba.QuerySide
         Task Update(WorkReportEntity entity, CancellationToken cancellationToken = default);
         Task Delete(Guid workReportId, CancellationToken cancellationToken = default);
     }
+
+    public interface ICustomerProjection
+    {
+        Task Add(CustomerEntity entity, CancellationToken cancellationToken = default);
+        Task Delete(Guid customerId, CancellationToken cancellationToken);
+        Task<CustomerEntity[]> List(CancellationToken cancellationToken);
+    }
 }

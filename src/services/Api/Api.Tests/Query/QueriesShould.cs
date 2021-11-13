@@ -51,5 +51,17 @@ namespace Booliba.Tests.Query
 
             response.Result.Should().NotBeNull();
         }
+
+        [Theory(DisplayName = "Return all the customers")]
+        [BoolibaInlineAutoData]
+        public async Task Test05(GetCustomersQuery query, string customerName)
+        {
+            _context.AddProjectedCustomer(Guid.NewGuid(), customerName);
+
+            var response = await _context.Sut.Send(query);
+
+            response.Results.Should().NotBeEmpty();
+            response.Results.Should().ContainSingle();
+        }
     }
 }

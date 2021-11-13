@@ -32,6 +32,8 @@ namespace Booliba.ApplicationCore.CoreDomain
 
         private void Apply(CustomerAdded @event) => _name = @event.Name;
 
+        private void Apply(CustomerRemoved @event) { }
+
         #endregion
     }
 }

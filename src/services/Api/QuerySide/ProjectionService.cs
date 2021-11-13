@@ -7,13 +7,16 @@ namespace Booliba.QuerySide
     public class ProjectionService
     {
         private readonly IWorkReportProjection _workReportProjection;
+        private readonly ICustomerProjection _customerProjection;
         private readonly ILogger<ProjectionService> _logger;
 
         public ProjectionService(
             IWorkReportProjection workReportProjection,
+            ICustomerProjection customerProjection,
             ILogger<ProjectionService> logger)
         {
             _workReportProjection = workReportProjection;
+            _customerProjection = customerProjection;
             _logger = logger;
         }
 
@@ -44,7 +47,7 @@ namespace Booliba.QuerySide
             await _workReportProjection.Update(updatedEntity, cancellationToken);
         }
 
-        public Task Remove(Guid workReportId, CancellationToken cancellationToken = default)
+        public Task RemoveWorkReport(Guid workReportId, CancellationToken cancellationToken = default)
         {
             _logger.LogDebug("Removing work report");
 
@@ -59,6 +62,20 @@ namespace Booliba.QuerySide
             var updatedEntity = entity! with { RecipientEmails = entity.RecipientEmails.Concat(recipientEmails).Distinct().ToArray() };
 
             await _workReportProjection.Update(updatedEntity, cancellationToken);
+        }
+
+        public Task CreateCustomer(Guid customerId, string name, CancellationToken cancellationToken = default)
+        {
+            _logger.LogDebug("Creating customer {CustomerName}", name);
+
+            return _customerProjection.Add(new CustomerEntity(customerId, name), cancellationToken);
+        }
+
+        public Task RemoveCustomer(Guid customerId, CancellationToken cancellationToken = default)
+        {
+            _logger.LogDebug("Removing customer");
+
+            return _customerProjection.Delete(customerId, cancellationToken);
         }
     }
 }
