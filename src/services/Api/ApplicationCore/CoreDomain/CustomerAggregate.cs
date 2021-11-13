@@ -14,7 +14,7 @@ namespace Booliba.ApplicationCore.CoreDomain
         {
             if (string.IsNullOrWhiteSpace(name))
             {
-                throw new AddCustomerException();
+                throw new AddCustomerException("A customer should have a name");
             }
 
             var aggregate = new CustomerAggregate(id);
@@ -25,6 +25,8 @@ namespace Booliba.ApplicationCore.CoreDomain
 
             return aggregate;
         }
+
+        internal void Remove() => _pendingEvents.Add(new CustomerRemoved(_id));
 
         #region Event handlers
 

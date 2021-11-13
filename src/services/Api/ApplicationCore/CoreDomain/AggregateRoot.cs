@@ -17,7 +17,23 @@ namespace Booliba.ApplicationCore.CoreDomain
         public static T ReHydrate<T>(Guid id, IEnumerable<DomainEvent> events)
             where T : AggregateRoot
         {
-            var aggregate = (T)Activator.CreateInstance(typeof(T), new object?[] { id })!;
+            if (!events.Any())
+            {
+                throw new InvalidOperationException("Cannot rehydrate a aggregate without events");
+            }
+
+            var constructor = typeof(T)
+            .GetConstructor(
+                BindingFlags.Instance | BindingFlags.NonPublic,
+                new Type[] { typeof(Guid) }
+            );
+
+            if (constructor is null)
+            {
+                throw new InvalidOperationException($"Cannot find constructor on type {typeof(T).FullName}");
+            }
+
+            var aggregate = (T)constructor.Invoke(new object?[] { id });
 
             foreach (var @event in events)
             {
@@ -33,7 +49,7 @@ namespace Booliba.ApplicationCore.CoreDomain
         {
             try
             {
-                var method = typeof(WorkReportAggregate)
+                var method = this.GetType()
                     .GetRuntimeMethods()
                     .Where(m =>
                         m.Name == nameof(Apply)
@@ -44,7 +60,7 @@ namespace Booliba.ApplicationCore.CoreDomain
             }
             catch (InvalidOperationException)
             {
-                throw new NotImplementedException($"'On({@event.GetType().Name} @event)' is not implemented");
+                throw new NotImplementedException($"'{nameof(Apply)}({@event.GetType().Name} @event)' is not implemented");
             }
         }
 

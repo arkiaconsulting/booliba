@@ -14,7 +14,7 @@ namespace Booliba.ApplicationCore.CoreDomain
         private string _name = string.Empty;
         private bool _removed;
 
-        public WorkReportAggregate(Guid id) : base(id) { }
+        private WorkReportAggregate(Guid id) : base(id) { }
 
         public static WorkReportAggregate Create(Guid id, string name, IEnumerable<DateOnly> days)
         {

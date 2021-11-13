@@ -19,7 +19,7 @@ namespace Booliba.ApplicationCore.AddDaysToReport
             var events = await _eventStore.Load(request.WorkReportId, cancellationToken);
             if (!events.Any())
             {
-                throw new WorkReportNotFoundException(request.WorkReportId);
+                throw new AggregateNotFound(request.WorkReportId);
             }
 
             var aggregate = AggregateRoot.ReHydrate<WorkReportAggregate>(request.WorkReportId, events);

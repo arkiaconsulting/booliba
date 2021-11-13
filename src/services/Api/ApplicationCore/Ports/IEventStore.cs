@@ -5,6 +5,6 @@ namespace Booliba.ApplicationCore.Ports
     public interface IEventStore
     {
         Task Save(IEnumerable<DomainEvent> events, CancellationToken cancellationToken = default);
-        Task<IEnumerable<DomainEvent>> Load(Guid workReportId, CancellationToken cancellationToken = default);
+        Task<IEnumerable<DomainEvent>> Load(Guid aggregateRootId, CancellationToken cancellationToken = default);
     }
 }

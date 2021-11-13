@@ -57,7 +57,7 @@ namespace Booliba.Tests.Domain.WorkReports
         {
             Func<Task> t = () => _context.Sut.Send(command, CancellationToken.None);
 
-            await t.Should().ThrowAsync<WorkReportNotFoundException>();
+            await t.Should().ThrowAsync<AggregateNotFound>();
         }
 
         [Theory(DisplayName = "Fail when no recipients are given"), BoolibaInlineAutoData]

@@ -2,9 +2,9 @@
 
 namespace Booliba.ApplicationCore
 {
-    public class WorkReportNotFoundException : Exception
+    public class AggregateNotFound : Exception
     {
-        public WorkReportNotFoundException(Guid workReportId)
+        public AggregateNotFound(Guid workReportId)
             : base($"The work report with Id '{workReportId}' was not found")
         {
         }
@@ -35,8 +35,8 @@ namespace Booliba.ApplicationCore
 
     public class AddCustomerException : Exception
     {
-        public AddCustomerException()
-            : base($"Cannot add a customer.")
+        public AddCustomerException(string reason)
+            : base(reason)
         {
         }
     }
