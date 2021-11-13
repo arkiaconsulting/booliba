@@ -26,7 +26,7 @@ namespace Booliba.ApplicationCore.SendReport
             {
                 throw new WorkReportNotFoundException(request.WorkReportId);
             }
-            var aggregate = WorkReportAggregate.ReHydrate(request.WorkReportId, events);
+            var aggregate = AggregateRoot.ReHydrate<WorkReportAggregate>(request.WorkReportId, events);
             aggregate.Send(request.EmailAddresses);
 
             await _emailNotifier.Send(new EmailMessage(request.WorkReportId, request.EmailAddresses), cancellationToken);

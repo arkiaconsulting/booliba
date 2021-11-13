@@ -22,7 +22,7 @@ namespace Booliba.ApplicationCore.AddDaysToReport
                 throw new WorkReportNotFoundException(request.WorkReportId);
             }
 
-            var aggregate = WorkReportAggregate.ReHydrate(request.WorkReportId, events);
+            var aggregate = AggregateRoot.ReHydrate<WorkReportAggregate>(request.WorkReportId, events);
             aggregate.AddDays(request.DaysToAdd);
 
             await _eventStore.Save(aggregate.PendingEvents, cancellationToken);
