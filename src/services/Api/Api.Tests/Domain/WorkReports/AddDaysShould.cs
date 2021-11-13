@@ -12,7 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Booliba.Tests.Domain
+namespace Booliba.Tests.Domain.WorkReports
 {
     [Trait("Category", "Unit")]
     public class AddDaysShould : IClassFixture<TestContext>
