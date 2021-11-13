@@ -71,7 +71,7 @@ namespace Booliba.Tests.Domain.WorkReports
         {
             Func<Task> t = () => _context.Sut.Send(command, CancellationToken.None);
 
-            await t.Should().ThrowAsync<WorkReportNotFoundException>();
+            await t.Should().ThrowAsync<AggregateNotFound>();
         }
 
         [Theory(DisplayName = "Cannot add days when the report has been removed"), BoolibaInlineAutoData]

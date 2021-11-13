@@ -2,6 +2,7 @@
 
 using AutoFixture;
 using Booliba.ApplicationCore.AddReport;
+using Booliba.ApplicationCore.Customers;
 using Booliba.ApplicationCore.Ports;
 using Booliba.ApplicationCore.RemoveDaysFromReport;
 using Booliba.ApplicationCore.RemoveWorkReport;
@@ -105,5 +106,14 @@ namespace Booliba.Tests.Fixtures
 
         internal void AddProjectedWorkReport(Guid workReportId, string workReportName, DateOnly[] days, string[]? recipientEmails = default) =>
             _Entities.Add(new WorkReportEntity(workReportId, workReportName, days, recipientEmails ?? Array.Empty<string>()));
+
+        public (Guid Id, string Name) AddCustomer(Guid id, Fixture fixture)
+        {
+            var customerAddedEvent = fixture.Create<CustomerAdded>();
+
+            _Events.Add(customerAddedEvent with { AggregateId = id });
+
+            return (customerAddedEvent.AggregateId, customerAddedEvent.Name);
+        }
     }
 }

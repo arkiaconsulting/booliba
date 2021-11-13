@@ -24,5 +24,5 @@ namespace Booliba.ApplicationCore.Customers
         }
     }
 
-    public record CustomerAdded(Guid CustomerId, string Name) : DomainEvent(CustomerId);
+    public record CustomerAdded(Guid AggregateId, string Name) : DomainEvent(AggregateId);
 }
