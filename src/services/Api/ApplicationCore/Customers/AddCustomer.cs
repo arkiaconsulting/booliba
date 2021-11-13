@@ -1,5 +1,6 @@
 ﻿// This code is under Copyright (C) 2021 of Arkia Consulting SAS all right reserved
 
+using Booliba.ApplicationCore.CoreDomain;
 using Booliba.ApplicationCore.Ports;
 using MediatR;
 
@@ -15,7 +16,9 @@ namespace Booliba.ApplicationCore.Customers
 
         async Task<Unit> IRequestHandler<AddCustomerCommand, Unit>.Handle(AddCustomerCommand request, CancellationToken cancellationToken)
         {
-            await _eventStore.Save(new[] { new CustomerAdded(request.CustomerId, request.Name) }, cancellationToken);
+            var aggregate = CustomerAggregate.Create(request.CustomerId, request.Name);
+
+            await _eventStore.Save(aggregate.PendingEvents, cancellationToken);
 
             return Unit.Value;
         }
