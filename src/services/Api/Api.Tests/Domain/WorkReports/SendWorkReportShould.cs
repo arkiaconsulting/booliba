@@ -47,7 +47,7 @@ namespace Booliba.Tests.Domain.WorkReports
                 .Should().ContainSingle()
                 .Which.Should().BeEquivalentTo(new
                 {
-                    command.WorkReportId,
+                    AggregateId = command.WorkReportId,
                     command.EmailAddresses
                 });
         }

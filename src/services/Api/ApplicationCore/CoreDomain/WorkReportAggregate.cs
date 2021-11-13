@@ -11,12 +11,12 @@ namespace Booliba.ApplicationCore.CoreDomain
 {
     internal class WorkReportAggregate
     {
-        internal IEnumerable<WorkReportEvent> PendingEvents => _pendingEvents;
+        internal IEnumerable<DomainEvent> PendingEvents => _pendingEvents;
 
         private readonly Guid _id;
         private readonly HashSet<DateOnly> _days = new();
         private readonly HashSet<string> _sentToEmails = new();
-        private readonly ICollection<WorkReportEvent> _pendingEvents = new HashSet<WorkReportEvent>();
+        private readonly ICollection<DomainEvent> _pendingEvents = new HashSet<DomainEvent>();
         private string _name = string.Empty;
         private bool _removed;
 
@@ -133,7 +133,7 @@ namespace Booliba.ApplicationCore.CoreDomain
 
         #region Re-hydrate
 
-        internal static WorkReportAggregate ReHydrate(Guid id, IEnumerable<WorkReportEvent> events)
+        internal static WorkReportAggregate ReHydrate(Guid id, IEnumerable<DomainEvent> events)
         {
             var aggregate = new WorkReportAggregate(id);
 
@@ -145,7 +145,7 @@ namespace Booliba.ApplicationCore.CoreDomain
             return aggregate;
         }
 
-        private void Apply(WorkReportEvent @event)
+        private void Apply(DomainEvent @event)
         {
             try
             {

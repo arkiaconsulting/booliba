@@ -12,19 +12,19 @@ namespace Booliba.Tests.Fixtures
 {
     internal class InMemoryEventStore : IEventStore
     {
-        public ICollection<WorkReportEvent> Events => _events;
+        public ICollection<DomainEvent> Events => _events;
 
-        private readonly ICollection<WorkReportEvent> _events = new HashSet<WorkReportEvent>();
+        private readonly ICollection<DomainEvent> _events = new HashSet<DomainEvent>();
 
-        Task IEventStore.Save(IEnumerable<WorkReportEvent> events, CancellationToken cancellationToken)
+        Task IEventStore.Save(IEnumerable<DomainEvent> events, CancellationToken cancellationToken)
         {
             events.ToList().ForEach(e => _events.Add(e));
 
             return Task.CompletedTask;
         }
 
-        Task<IEnumerable<WorkReportEvent>> IEventStore.Load(Guid workReportId, CancellationToken cancellationToken) =>
-            Task.FromResult(_events.Where(e => e.WorkReportId == workReportId).AsEnumerable());
+        Task<IEnumerable<DomainEvent>> IEventStore.Load(Guid workReportId, CancellationToken cancellationToken) =>
+            Task.FromResult(_events.Where(e => e.AggregateId == workReportId).AsEnumerable());
     }
 }
 
