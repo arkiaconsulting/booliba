@@ -32,4 +32,12 @@ namespace Booliba.ApplicationCore
         {
         }
     }
+
+    public class AddCustomerException : Exception
+    {
+        public AddCustomerException()
+            : base($"Cannot add a customer.")
+        {
+        }
+    }
 }
