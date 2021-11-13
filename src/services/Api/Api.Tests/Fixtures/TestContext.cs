@@ -20,12 +20,14 @@ namespace Booliba.Tests.Fixtures
     public sealed class TestContext
     {
         public IMediator Sut => _host.Services.GetRequiredService<IMediator>();
-        public IEnumerable<WorkReportEntity> Entities => _Entities;
+        public IEnumerable<WorkReportEntity> WorkReportEntities => _WorkReportEntities;
+        public IEnumerable<CustomerEntity> CustomerEntities => _CustomerEntities;
 
         private ICollection<DomainEvent> _Events => (_host.Services.GetRequiredService<IEventStore>() as InMemoryEventStore)!.Events;
         private IEnumerable<EmailMessage> _Emails => (_host.Services.GetRequiredService<IEmailNotifier>() as InMemoryEmailNotifier)!.Emails;
         public ProjectionService ProjectionService => _host.Services.GetRequiredService<ProjectionService>();
-        private ICollection<WorkReportEntity> _Entities => (_host.Services.GetRequiredService<IWorkReportProjection>() as InMemoryProjection)!.WorkReports;
+        private ICollection<WorkReportEntity> _WorkReportEntities => (_host.Services.GetRequiredService<IWorkReportProjection>() as InMemoryProjection)!.WorkReports;
+        private ICollection<CustomerEntity> _CustomerEntities => (_host.Services.GetRequiredService<ICustomerProjection>() as InMemoryProjection)!.Customers;
 
         private readonly IHost _host;
 
@@ -105,7 +107,7 @@ namespace Booliba.Tests.Fixtures
         }
 
         internal void AddProjectedWorkReport(Guid workReportId, string workReportName, DateOnly[] days, string[]? recipientEmails = default) =>
-            _Entities.Add(new WorkReportEntity(workReportId, workReportName, days, recipientEmails ?? Array.Empty<string>()));
+            _WorkReportEntities.Add(new WorkReportEntity(workReportId, workReportName, days, recipientEmails ?? Array.Empty<string>()));
 
         public (Guid Id, string Name) AddCustomer(Guid id, Fixture fixture)
         {
@@ -115,5 +117,8 @@ namespace Booliba.Tests.Fixtures
 
             return (customerAddedEvent.AggregateId, customerAddedEvent.Name);
         }
+
+        internal void AddProjectedCustomer(Guid customerId, string name) =>
+            _CustomerEntities.Add(new CustomerEntity(customerId, name));
     }
 }

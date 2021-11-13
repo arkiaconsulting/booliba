@@ -8,9 +8,10 @@ using System.Reflection;
 
 namespace Booliba.Api.Fakes
 {
-    internal class InMemoryProjection : IWorkReportProjection
+    internal class InMemoryProjection : IWorkReportProjection, ICustomerProjection
     {
         private readonly ConcurrentDictionary<Guid, WorkReportEntity> _workReportEntities = new();
+        private readonly ConcurrentDictionary<Guid, CustomerEntity> _customerEntities = new();
 
         #region IWorkReportProjection
 
@@ -43,6 +44,27 @@ namespace Booliba.Api.Fakes
         }
 
         #endregion
+
+        #region IWorkReportProjection
+
+        Task ICustomerProjection.Add(CustomerEntity entity, CancellationToken cancellationToken)
+        {
+            _customerEntities.AddOrUpdate(entity.Id, _ => entity, (_, _) => entity);
+
+            return Task.CompletedTask;
+        }
+
+        Task ICustomerProjection.Delete(Guid customerId, CancellationToken cancellationToken)
+        {
+            _ = _customerEntities.Remove(customerId, out var _);
+
+            return Task.CompletedTask;
+        }
+
+        Task<CustomerEntity[]> ICustomerProjection.List(CancellationToken cancellationToken) =>
+            Task.FromResult(_customerEntities.Values.ToArray());
+
+        #endregion
     }
 
     internal class InMemoryEventHandler :
@@ -50,7 +72,9 @@ namespace Booliba.Api.Fakes
         INotificationHandler<ReportAddedNotification>,
         INotificationHandler<DaysRemovedNotification>,
         INotificationHandler<WorkReportRemovedNotification>,
-        INotificationHandler<WorkReportSentNotification>
+        INotificationHandler<WorkReportSentNotification>,
+        INotificationHandler<CustomerAddedNotification>,
+        INotificationHandler<CustomerRemovedNotification>
     {
         private readonly ProjectionService _projectionService;
 
@@ -76,7 +100,7 @@ namespace Booliba.Api.Fakes
                 cancellationToken);
 
         Task INotificationHandler<WorkReportRemovedNotification>.Handle(WorkReportRemovedNotification notification, CancellationToken cancellationToken) =>
-            _projectionService.Remove(
+            _projectionService.RemoveWorkReport(
                 notification.Event.AggregateId,
                 cancellationToken);
 
@@ -84,6 +108,15 @@ namespace Booliba.Api.Fakes
             _projectionService.AddRecipients(
                 notification.Event.AggregateId,
                 notification.Event.EmailAddresses,
+                cancellationToken);
+        Task INotificationHandler<CustomerAddedNotification>.Handle(CustomerAddedNotification notification, CancellationToken cancellationToken) =>
+            _projectionService.CreateCustomer(
+                notification.Event.AggregateId,
+                notification.Event.Name,
+                cancellationToken);
+        Task INotificationHandler<CustomerRemovedNotification>.Handle(CustomerRemovedNotification notification, CancellationToken cancellationToken) =>
+            _projectionService.RemoveCustomer(
+                notification.Event.AggregateId,
                 cancellationToken);
     }
 }
@@ -94,6 +127,7 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         public static IServiceCollection AddInMemoryProjection(this IServiceCollection services) =>
             services.AddSingleton<IWorkReportProjection, InMemoryProjection>()
+            .AddSingleton<ICustomerProjection, InMemoryProjection>()
             .AddMediatR(Assembly.GetExecutingAssembly());
     }
 }

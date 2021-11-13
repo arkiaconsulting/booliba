@@ -11,18 +11,18 @@ using Xunit;
 namespace Booliba.Tests.Query
 {
     [Trait("Category", "Unit")]
-    public class ProjectionServiceShould
+    public class WorkReportProjectionServiceShould
     {
         private readonly TestContext _context;
 
-        public ProjectionServiceShould() => _context = new TestContext();
+        public WorkReportProjectionServiceShould() => _context = new TestContext();
 
         [Theory(DisplayName = "Project a new work report"), BoolibaInlineAutoData]
         public async Task Test01(Guid workReportId, string name, DateOnly[] days)
         {
             await _context.ProjectionService.CreateWorkReport(workReportId, name, days);
 
-            _context.Entities.Should().ContainEquivalentOf(
+            _context.WorkReportEntities.Should().ContainEquivalentOf(
                 new WorkReportEntity(workReportId, name, days, Array.Empty<string>())
             );
         }
@@ -34,7 +34,7 @@ namespace Booliba.Tests.Query
 
             await _context.ProjectionService.AddDays(workReportId, daysToAdd);
 
-            _context.Entities.Should().ContainEquivalentOf(
+            _context.WorkReportEntities.Should().ContainEquivalentOf(
                 new WorkReportEntity(workReportId, workReportName, days.Concat(daysToAdd).ToArray(), Array.Empty<string>())
             );
         }
@@ -48,7 +48,7 @@ namespace Booliba.Tests.Query
             await _context.ProjectionService.RemoveDays(workReportId, daysToRemove);
 
             var expectedDays = days.Except(daysToRemove).ToArray();
-            _context.Entities.Should().ContainEquivalentOf(
+            _context.WorkReportEntities.Should().ContainEquivalentOf(
                 new WorkReportEntity(workReportId, workReportName, expectedDays, Array.Empty<string>())
             );
         }
@@ -58,9 +58,9 @@ namespace Booliba.Tests.Query
         {
             _context.AddProjectedWorkReport(workReportId, workReportName, days);
 
-            await _context.ProjectionService.Remove(workReportId);
+            await _context.ProjectionService.RemoveWorkReport(workReportId);
 
-            _context.Entities.Should().NotContainEquivalentOf(new
+            _context.WorkReportEntities.Should().NotContainEquivalentOf(new
             {
                 Id = workReportId
             });
@@ -73,7 +73,7 @@ namespace Booliba.Tests.Query
 
             await _context.ProjectionService.AddRecipients(workReportId, recipientEmails);
 
-            _context.Entities.Should().ContainEquivalentOf(
+            _context.WorkReportEntities.Should().ContainEquivalentOf(
                 new WorkReportEntity(workReportId, workReportName, days, recipientEmails)
             );
         }
@@ -85,7 +85,7 @@ namespace Booliba.Tests.Query
 
             await _context.ProjectionService.AddRecipients(workReportId, recipientEmails.PickRandom(1).ToArray());
 
-            _context.Entities.Should().ContainEquivalentOf(
+            _context.WorkReportEntities.Should().ContainEquivalentOf(
                 new WorkReportEntity(workReportId, workReportName, days, recipientEmails)
             );
         }
