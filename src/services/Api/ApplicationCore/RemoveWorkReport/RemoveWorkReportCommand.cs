@@ -21,7 +21,7 @@ namespace Booliba.ApplicationCore.RemoveWorkReport
             {
                 return Unit.Value;
             }
-            var aggregate = WorkReportAggregate.ReHydrate(request.WorkReportId, events);
+            var aggregate = AggregateRoot.ReHydrate<WorkReportAggregate>(request.WorkReportId, events);
             aggregate.Remove();
 
             await _eventStore.Save(aggregate.PendingEvents, cancellationToken);

@@ -1,19 +1,14 @@
 ﻿// This code is under Copyright (C) 2021 of Arkia Consulting SAS all right reserved
 
 using Booliba.ApplicationCore.Customers;
-using Booliba.ApplicationCore.Ports;
 
 namespace Booliba.ApplicationCore.CoreDomain
 {
-    internal class CustomerAggregate
+    internal class CustomerAggregate : AggregateRoot
     {
-        internal IEnumerable<DomainEvent> PendingEvents => _pendingEvents;
-
-        private readonly ICollection<DomainEvent> _pendingEvents = new HashSet<DomainEvent>();
-        private readonly Guid _id;
         private string _name = string.Empty;
 
-        private CustomerAggregate(Guid id) => _id = id;
+        private CustomerAggregate(Guid id) : base(id) { }
 
         internal static CustomerAggregate Create(Guid id, string name)
         {
@@ -25,7 +20,7 @@ namespace Booliba.ApplicationCore.CoreDomain
             var aggregate = new CustomerAggregate(id);
             var @event = new CustomerAdded(id, name);
 
-            aggregate.On(@event);
+            aggregate.Apply(@event);
             aggregate._pendingEvents.Add(@event);
 
             return aggregate;
@@ -33,7 +28,7 @@ namespace Booliba.ApplicationCore.CoreDomain
 
         #region Event handlers
 
-        private void On(CustomerAdded @event) => _name = @event.Name;
+        private void Apply(CustomerAdded @event) => _name = @event.Name;
 
         #endregion
     }

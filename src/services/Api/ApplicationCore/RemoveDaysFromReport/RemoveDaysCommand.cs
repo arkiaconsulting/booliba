@@ -21,7 +21,7 @@ namespace Booliba.ApplicationCore.RemoveDaysFromReport
             {
                 throw new WorkReportNotFoundException(request.WorkReportId);
             }
-            var aggregate = WorkReportAggregate.ReHydrate(request.WorkReportId, events);
+            var aggregate = AggregateRoot.ReHydrate<WorkReportAggregate>(request.WorkReportId, events);
             aggregate.RemoveDays(request.DaysToRemove);
 
             await _eventStore.Save(aggregate.PendingEvents, cancellationToken);
