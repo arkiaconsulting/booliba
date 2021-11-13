@@ -21,7 +21,7 @@ namespace Booliba.Tests.Fixtures
         public IMediator Sut => _host.Services.GetRequiredService<IMediator>();
         public IEnumerable<WorkReportEntity> Entities => _Entities;
 
-        private ICollection<WorkReportEvent> _Events => (_host.Services.GetRequiredService<IEventStore>() as InMemoryEventStore)!.Events;
+        private ICollection<DomainEvent> _Events => (_host.Services.GetRequiredService<IEventStore>() as InMemoryEventStore)!.Events;
         private IEnumerable<EmailMessage> _Emails => (_host.Services.GetRequiredService<IEmailNotifier>() as InMemoryEmailNotifier)!.Emails;
         public ProjectionService ProjectionService => _host.Services.GetRequiredService<ProjectionService>();
         private ICollection<WorkReportEntity> _Entities => (_host.Services.GetRequiredService<IWorkReportProjection>() as InMemoryProjection)!.WorkReports;
@@ -37,8 +37,8 @@ namespace Booliba.Tests.Fixtures
                 .AddQuerySide().AddInMemoryProjection()
             ).Build();
 
-        public IEnumerable<WorkReportEvent> Events(Guid workReportId) =>
-            _Events.Where(e => e.WorkReportId == workReportId);
+        public IEnumerable<DomainEvent> Events(Guid workReportId) =>
+            _Events.Where(e => e.AggregateId == workReportId);
 
         public IEnumerable<EmailMessage> Emails(Guid workReportId) =>
             _Emails.Where(e => e.WorkReportId == workReportId);
@@ -46,18 +46,18 @@ namespace Booliba.Tests.Fixtures
         public (Guid Id, IEnumerable<DateOnly> Days) AddWorkReport(Guid workReportId, Fixture fixture)
         {
             var workReportAddedEvent = fixture.Build<ReportAdded>()
-                .With(c => c.WorkReportId, workReportId)
+                .With(c => c.AggregateId, workReportId)
                 .Create();
 
             _Events.Add(workReportAddedEvent);
 
-            return (workReportAddedEvent.WorkReportId, workReportAddedEvent.Days);
+            return (workReportAddedEvent.AggregateId, workReportAddedEvent.Days);
         }
 
         internal void RemoveWorkReport(Guid workReportId, Fixture fixture)
         {
             var workReportRemovedEvent = fixture.Build<WorkReportRemoved>()
-                .With(c => c.WorkReportId, workReportId)
+                .With(c => c.AggregateId, workReportId)
                 .Create();
 
             _Events.Add(workReportRemovedEvent);
@@ -69,13 +69,13 @@ namespace Booliba.Tests.Fixtures
 
             _Events.Add(workReportAddedEvent);
 
-            return (workReportAddedEvent.WorkReportId, workReportAddedEvent.Days);
+            return (workReportAddedEvent.AggregateId, workReportAddedEvent.Days);
         }
 
         public IEnumerable<DateOnly> AddDays(Guid workReportId, Fixture fixture)
         {
             var daysAdded = fixture.Build<DaysAdded>()
-                .With(c => c.WorkReportId, workReportId)
+                .With(c => c.AggregateId, workReportId)
                 .Create();
 
             _Events.Add(daysAdded);
@@ -86,7 +86,6 @@ namespace Booliba.Tests.Fixtures
         internal IEnumerable<DateOnly> RemoveDays(Guid workReportId, IEnumerable<DateOnly> daysToRemove, Fixture fixture)
         {
             var daysRemovedEvent = fixture.Build<DaysRemoved>()
-                .With(c => c.WorkReportId, workReportId)
                 .With(c => c.Days, daysToRemove)
                 .Create();
 
@@ -98,7 +97,6 @@ namespace Booliba.Tests.Fixtures
         internal void Send(Guid workReportId, string[] emailAddresses, Fixture fixture)
         {
             var sentEvent = fixture.Build<WorkReportSent>()
-                .With(c => c.WorkReportId, workReportId)
                 .With(c => c.EmailAddresses, emailAddresses)
                 .Create();
 

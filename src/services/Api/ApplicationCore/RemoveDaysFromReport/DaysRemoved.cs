@@ -4,5 +4,5 @@ using Booliba.ApplicationCore.Ports;
 
 namespace Booliba.ApplicationCore.RemoveDaysFromReport
 {
-    public record DaysRemoved(Guid WorkReportId, IEnumerable<DateOnly> Days) : WorkReportEvent(WorkReportId);
+    public record DaysRemoved(Guid AggregateId, IEnumerable<DateOnly> Days) : DomainEvent(AggregateId);
 }

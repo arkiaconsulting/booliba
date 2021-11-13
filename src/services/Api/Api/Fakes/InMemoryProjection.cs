@@ -58,31 +58,31 @@ namespace Booliba.Api.Fakes
 
         Task INotificationHandler<DaysAddedNotification>.Handle(DaysAddedNotification notification, CancellationToken cancellationToken) =>
             _projectionService.AddDays(
-                notification.Event.WorkReportId,
+                notification.Event.AggregateId,
                 notification.Event.Days.ToArray(),
                 cancellationToken);
 
         Task INotificationHandler<ReportAddedNotification>.Handle(ReportAddedNotification notification, CancellationToken cancellationToken) =>
             _projectionService.CreateWorkReport(
-                notification.Event.WorkReportId,
+                notification.Event.AggregateId,
                 notification.Event.WorkReportName,
                 notification.Event.Days.ToArray(),
                 cancellationToken);
 
         Task INotificationHandler<DaysRemovedNotification>.Handle(DaysRemovedNotification notification, CancellationToken cancellationToken) =>
             _projectionService.RemoveDays(
-                notification.Event.WorkReportId,
+                notification.Event.AggregateId,
                 notification.Event.Days.ToArray(),
                 cancellationToken);
 
         Task INotificationHandler<WorkReportRemovedNotification>.Handle(WorkReportRemovedNotification notification, CancellationToken cancellationToken) =>
             _projectionService.Remove(
-                notification.Event.WorkReportId,
+                notification.Event.AggregateId,
                 cancellationToken);
 
         Task INotificationHandler<WorkReportSentNotification>.Handle(WorkReportSentNotification notification, CancellationToken cancellationToken) =>
             _projectionService.AddRecipients(
-                notification.Event.WorkReportId,
+                notification.Event.AggregateId,
                 notification.Event.EmailAddresses,
                 cancellationToken);
     }

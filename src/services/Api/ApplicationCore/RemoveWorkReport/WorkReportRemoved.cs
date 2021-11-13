@@ -4,5 +4,5 @@ using Booliba.ApplicationCore.Ports;
 
 namespace Booliba.ApplicationCore.RemoveWorkReport
 {
-    public record WorkReportRemoved(Guid WorkReportId) : WorkReportEvent(WorkReportId);
+    public record WorkReportRemoved(Guid AggregateId) : DomainEvent(AggregateId);
 }

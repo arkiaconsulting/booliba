@@ -19,7 +19,8 @@ namespace Booliba.Tests.Domain.WorkReports
         public AddWorkReportShould(TestContext context) => _context = context;
 
         [Theory(DisplayName = "Pass"), BoolibaInlineAutoData]
-        public async Task Test01(AddWorkReportCommand command) => await _context.Sut.Send(command, CancellationToken.None);
+        public async Task Test01(AddWorkReportCommand command) =>
+            await _context.Sut.Send(command, CancellationToken.None);
 
         [Theory(DisplayName = "Produce an event"), BoolibaInlineAutoData]
         public async Task Test02(AddWorkReportCommand command)
@@ -49,7 +50,7 @@ namespace Booliba.Tests.Domain.WorkReports
             _context.Events(command.WorkReportId).OfType<ReportAdded>().Should().ContainSingle()
                 .Which.Should().BeEquivalentTo(new
                 {
-                    command.WorkReportId
+                    AggregateId = command.WorkReportId
                 });
         }
 

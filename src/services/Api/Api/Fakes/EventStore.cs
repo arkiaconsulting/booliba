@@ -12,7 +12,7 @@ namespace Booliba.Api.Fakes
 {
     internal class InMemoryEventStore : IEventStore
     {
-        private readonly ICollection<WorkReportEvent> _events = new List<WorkReportEvent>();
+        private readonly ICollection<DomainEvent> _events = new List<DomainEvent>();
         private readonly ILogger<InMemoryEventStore> _logger;
         private readonly IMediator _mediator;
 
@@ -24,19 +24,19 @@ namespace Booliba.Api.Fakes
             _mediator = mediator;
         }
 
-        Task<IEnumerable<WorkReportEvent>> IEventStore.Load(Guid workReportId, CancellationToken cancellationToken)
+        Task<IEnumerable<DomainEvent>> IEventStore.Load(Guid workReportId, CancellationToken cancellationToken)
         {
             _logger.LogDebug("Loading events from the event store");
 
             return Task.FromResult(
                 _events
-                .Where(e => e.WorkReportId == workReportId)
+                .Where(e => e.AggregateId == workReportId)
                 .ToList()
                 .AsEnumerable()
                 );
         }
 
-        async Task IEventStore.Save(IEnumerable<WorkReportEvent> events, CancellationToken cancellationToken)
+        async Task IEventStore.Save(IEnumerable<DomainEvent> events, CancellationToken cancellationToken)
         {
             events.ToList().ForEach(e => _events.Add(e));
 

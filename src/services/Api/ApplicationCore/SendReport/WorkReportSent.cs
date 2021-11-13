@@ -4,5 +4,5 @@ using Booliba.ApplicationCore.Ports;
 
 namespace Booliba.ApplicationCore.SendReport
 {
-    public record WorkReportSent(Guid WorkReportId, string[] EmailAddresses) : WorkReportEvent(WorkReportId);
+    public record WorkReportSent(Guid AggregateId, string[] EmailAddresses) : DomainEvent(AggregateId);
 }
