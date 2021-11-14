@@ -23,6 +23,27 @@ namespace Booliba.ApiTests
         public void GivenIHadAContractWithANewCustomerNamed(string customerName) =>
             _newCustomerName = customerName;
 
+        [Given(@"I have added a customer named '([^']*)'")]
+        public async Task GivenIHaveAddedACustomerNamedAsync(string contoso)
+        {
+            _customerId = Guid.NewGuid();
+
+            using var httpClient = new HttpClient { BaseAddress = _context.ApiBaseUri };
+            var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"customers/{_customerId}")
+            {
+                Content = JsonContent.Create(new
+                {
+                    Name = contoso
+                },
+                options: _context.JsonSerializerOptions)
+            };
+
+            using var response = await httpClient.SendAsync(httpRequest);
+            response.EnsureSuccessStatusCode();
+
+            _context.SetCustomer(_customerId!.Value);
+        }
+
         [When(@"I add a new customer")]
         public async Task WhenIAddANewCustomerAsync()
         {

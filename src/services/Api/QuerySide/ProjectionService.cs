@@ -20,11 +20,11 @@ namespace Booliba.QuerySide
             _logger = logger;
         }
 
-        public Task CreateWorkReport(Guid workReportId, string name, DateOnly[] days, CancellationToken cancellationToken = default)
+        public Task CreateWorkReport(Guid workReportId, string name, DateOnly[] days, Guid? customerId, CancellationToken cancellationToken = default)
         {
             _logger.LogDebug("Creating work report {WorkReportName} {Days}", name, string.Join(" ", days.Select(d => d.ToString())));
 
-            return _workReportProjection.Add(new WorkReportEntity(workReportId, name, days, Array.Empty<string>()), cancellationToken);
+            return _workReportProjection.Add(new WorkReportEntity(workReportId, name, days, Array.Empty<string>(), customerId), cancellationToken);
         }
 
         public async Task AddDays(Guid workReportId, DateOnly[] days, CancellationToken cancellationToken = default)
@@ -76,6 +76,16 @@ namespace Booliba.QuerySide
             _logger.LogDebug("Removing customer");
 
             return _customerProjection.Delete(customerId, cancellationToken);
+        }
+
+        public async Task SetCustomer(Guid workReportId, Guid? customerId, CancellationToken cancellationToken = default)
+        {
+            _logger.LogDebug("Setting customer {CustomerId}", customerId);
+
+            var entity = await _workReportProjection.Get(workReportId, cancellationToken);
+            var updatedEntity = entity! with { CustomerId = customerId };
+
+            await _workReportProjection.Update(updatedEntity, cancellationToken);
         }
     }
 }

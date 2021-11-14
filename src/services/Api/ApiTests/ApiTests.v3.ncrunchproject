@@ -1,21 +1,3 @@
 ﻿<ProjectConfiguration>
-  <Settings>
-    <IgnoredTests>
-      <NamedTestSelector>
-        <TestName>Booliba.ApiTests.EasilyManageAndSendWorkReportsFeature.SendMyWorkReport</TestName>
-      </NamedTestSelector>
-      <NamedTestSelector>
-        <TestName>Booliba.ApiTests.EasilyManageAndSendWorkReportsFeature.AddAReport</TestName>
-      </NamedTestSelector>
-      <NamedTestSelector>
-        <TestName>Booliba.ApiTests.EasilyManageAndSendWorkReportsFeature.AddDaysToAnExistingReport</TestName>
-      </NamedTestSelector>
-      <NamedTestSelector>
-        <TestName>Booliba.ApiTests.EasilyManageAndSendWorkReportsFeature.RemoveAWorkReport</TestName>
-      </NamedTestSelector>
-      <NamedTestSelector>
-        <TestName>Booliba.ApiTests.EasilyManageAndSendWorkReportsFeature.RemoveDaysAnExistingReport</TestName>
-      </NamedTestSelector>
-    </IgnoredTests>
-  </Settings>
+  <Settings />
 </ProjectConfiguration>

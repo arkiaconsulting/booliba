@@ -4,5 +4,5 @@ using System;
 
 namespace Booliba.ApiTests.Fixture
 {
-    internal record WorkReportDto(Guid Id, string Name, DateOnly[] Days, string[] Recipients);
+    internal record WorkReportDto(Guid Id, string Name, DateOnly[] Days, string[] Recipients, Guid? CustomerId);
 }

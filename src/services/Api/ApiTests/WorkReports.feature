@@ -32,3 +32,15 @@ Scenario: Send my work report
 		| email            |
 		| toto@contoso.com |
 		| titi@contoso.com |
+
+Scenario: Add a report for a given customer
+	Given I have added a customer named 'Contoso'
+	And I have prepared my report for the current month
+	When I add my work report
+	Then I can see my work report into the work report list
+
+Scenario: Set the customer for a work report afterwards
+	Given I have added a work report
+	And I have added a customer named 'Contoso'
+	When I set the customer of my work report
+	Then I can see that the customer of my work report has been set

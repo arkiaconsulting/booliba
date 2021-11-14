@@ -1,9 +1,9 @@
 ﻿<ProjectConfiguration>
   <Settings>
     <IgnoredTests>
-      <NamedTestSelector>
-        <TestName>Booliba.Tests.CosmosReportTests.Test1</TestName>
-      </NamedTestSelector>
+      <FixtureTestSelector>
+        <FixtureName>Booliba.Tests.CosmosReportTests</FixtureName>
+      </FixtureTestSelector>
     </IgnoredTests>
   </Settings>
 </ProjectConfiguration>
