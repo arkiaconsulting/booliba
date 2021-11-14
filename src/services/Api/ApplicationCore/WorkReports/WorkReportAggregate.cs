@@ -64,6 +64,25 @@ namespace Booliba.ApplicationCore.WorkReports
             }
         }
 
+        internal void SetCustomer(Guid customerId)
+        {
+            var @event = new WorkReportCustomerSet(_id, customerId);
+
+            Apply(@event);
+
+            _pendingEvents.Add(@event);
+        }
+
+
+        internal void UnsetCustomer()
+        {
+            var @event = new WorkReportCustomerUnset(_id);
+
+            Apply(@event);
+
+            _pendingEvents.Add(@event);
+        }
+
         internal void AddDays(IEnumerable<DateOnly> daysToAdd)
         {
             ThrowIfRemoved();
@@ -121,6 +140,12 @@ namespace Booliba.ApplicationCore.WorkReports
 
         private void Apply(WorkReportSent @event) =>
             @event.EmailAddresses.ToList().ForEach(email => _sentToEmails.Add(email));
+
+        private void Apply(WorkReportCustomerUnset _) =>
+            _customerId = default;
+
+        private void Apply(WorkReportCustomerSet @event) =>
+            _customerId = @event.CustomerId;
 
         #endregion
     }

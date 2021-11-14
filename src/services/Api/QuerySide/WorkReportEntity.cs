@@ -2,5 +2,5 @@
 
 namespace Booliba.QuerySide
 {
-    public record WorkReportEntity(Guid Id, string Name, DateOnly[] Days, string[] RecipientEmails);
+    public record WorkReportEntity(Guid Id, string Name, DateOnly[] Days, string[] RecipientEmails, Guid? CustomerId = default);
 }

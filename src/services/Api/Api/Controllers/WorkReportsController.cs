@@ -102,6 +102,22 @@ namespace Booliba.Api.Controllers
             return Ok();
         }
 
+        [HttpPost("{id:guid}/customer")]
+        public async Task<IActionResult> SetCustomer(
+            [FromRoute] Guid id,
+            [FromBody] SetWorkReportCustomer request,
+            CancellationToken cancellationToken)
+        {
+            using var _ = _logger.BeginScope(new Dictionary<string, string> { { "WorkReportId", id.ToString() }, { "Endpoint", nameof(SetCustomer) }, { "Side", "Command" } });
+
+            await _mediator.Send(
+                new SetWorkReportCustomerCommand(id, request.CustomerId),
+                cancellationToken
+            );
+
+            return Ok();
+        }
+
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetWorkReport(
             [FromRoute] Guid id,
@@ -124,7 +140,8 @@ namespace Booliba.Api.Controllers
                     response.Result.Id,
                     response.Result.Name,
                     response.Result.Days,
-                    response.Result.RecipientEmails)
+                    response.Result.RecipientEmails,
+                    response.Result.CustomerId)
             );
         }
 
@@ -144,15 +161,17 @@ namespace Booliba.Api.Controllers
                         wr.Id,
                         wr.Name,
                         wr.Days,
-                        wr.RecipientEmails)
+                        wr.RecipientEmails,
+                        wr.CustomerId)
                 )
             );
         }
     }
 
-    public record AddWorkReportRequest(string Name, DateOnly[] Days, Guid CustomerId);
+    public record AddWorkReportRequest(string Name, DateOnly[] Days, Guid? CustomerId);
     public record AddWorkReportDaysRequest(DateOnly[] Days);
     public record RemoveWorkReportDaysRequest(DateOnly[] Days);
     public record SendWorkReportRequest(string[] EmailAddresses);
-    public record WorkReportResponse(Guid Id, string Name, DateOnly[] Days, string[] Recipients);
+    public record WorkReportResponse(Guid Id, string Name, DateOnly[] Days, string[] Recipients, Guid? CustomerId);
+    public record SetWorkReportCustomer(Guid? CustomerId);
 }

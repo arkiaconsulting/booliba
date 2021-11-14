@@ -18,12 +18,12 @@ namespace Booliba.Tests.Query
         public WorkReportProjectionServiceShould() => _context = new TestContext();
 
         [Theory(DisplayName = "Project a new work report"), BoolibaInlineAutoData]
-        public async Task Test01(Guid workReportId, string name, DateOnly[] days)
+        public async Task Test01(Guid workReportId, string name, DateOnly[] days, Guid customerId)
         {
-            await _context.ProjectionService.CreateWorkReport(workReportId, name, days);
+            await _context.ProjectionService.CreateWorkReport(workReportId, name, days, customerId);
 
             _context.WorkReportEntities.Should().ContainEquivalentOf(
-                new WorkReportEntity(workReportId, name, days, Array.Empty<string>())
+                new WorkReportEntity(workReportId, name, days, Array.Empty<string>(), customerId)
             );
         }
 
@@ -87,6 +87,30 @@ namespace Booliba.Tests.Query
 
             _context.WorkReportEntities.Should().ContainEquivalentOf(
                 new WorkReportEntity(workReportId, workReportName, days, recipientEmails)
+            );
+        }
+
+        [Theory(DisplayName = "Project when the customer is set on the work report"), BoolibaInlineAutoData]
+        public async Task Test08(Guid workReportId, Guid customerId, string workReportName, DateOnly[] days)
+        {
+            _context.AddProjectedWorkReport(workReportId, workReportName, days);
+
+            await _context.ProjectionService.SetCustomer(workReportId, customerId);
+
+            _context.WorkReportEntities.Should().ContainEquivalentOf(
+                new WorkReportEntity(workReportId, workReportName, days.ToArray(), Array.Empty<string>(), customerId)
+            );
+        }
+
+        [Theory(DisplayName = "Project when the customer is unset on the work report"), BoolibaInlineAutoData]
+        public async Task Test09(Guid workReportId, string workReportName, DateOnly[] days)
+        {
+            _context.AddProjectedWorkReport(workReportId, workReportName, days);
+
+            await _context.ProjectionService.SetCustomer(workReportId, default);
+
+            _context.WorkReportEntities.Should().ContainEquivalentOf(
+                new WorkReportEntity(workReportId, workReportName, days.ToArray(), Array.Empty<string>(), default)
             );
         }
     }

@@ -51,6 +51,8 @@ namespace Booliba.Api.Fakes
                     WorkReportSent e => _mediator.Publish(new WorkReportSentNotification(e), cancellationToken),
                     CustomerAdded e => _mediator.Publish(new CustomerAddedNotification(e), cancellationToken),
                     CustomerRemoved e => _mediator.Publish(new CustomerRemovedNotification(e), cancellationToken),
+                    WorkReportCustomerSet e => _mediator.Publish(new WorkReportCustomerSetNotification(e), cancellationToken),
+                    WorkReportCustomerUnset e => _mediator.Publish(new WorkReportCustomerUnsetNotification(e), cancellationToken),
                     _ => throw new InvalidOperationException($"Cannot handle an event of type '{@event.GetType().Name}'")
                 });
             }
@@ -80,6 +82,8 @@ namespace Booliba.Api.Fakes
     internal record WorkReportSentNotification(WorkReportSent Event) : INotification;
     internal record CustomerAddedNotification(CustomerAdded Event) : INotification;
     internal record CustomerRemovedNotification(CustomerRemoved Event) : INotification;
+    internal record WorkReportCustomerSetNotification(WorkReportCustomerSet Event) : INotification;
+    internal record WorkReportCustomerUnsetNotification(WorkReportCustomerUnset Event) : INotification;
 
     #endregion
 }

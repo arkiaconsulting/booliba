@@ -11,38 +11,38 @@ namespace Booliba.Tests.Fixtures
 {
     internal class BoolibaInlineAutoDataAttribute : InlineAutoDataAttribute
     {
-        public BoolibaInlineAutoDataAttribute(bool addWorkReportWithCustomer = false)
-            : base(new BoolibaAutoDataAttribute(addWorkReportWithCustomer))
+        public BoolibaInlineAutoDataAttribute(bool workReportWithCustomer = false)
+            : base(new BoolibaAutoDataAttribute(workReportWithCustomer))
         {
         }
     }
 
     internal class BoolibaAutoDataAttribute : AutoDataAttribute
     {
-        public BoolibaAutoDataAttribute(bool addWorkReportWithCustomer = false)
-            : base(() => new Fixture().Customize(new BoolibaDefaultConventions(addWorkReportWithCustomer)))
+        public BoolibaAutoDataAttribute(bool workReportWithCustomer = false)
+            : base(() => new Fixture().Customize(new BoolibaDefaultConventions(workReportWithCustomer)))
         {
         }
     }
 
     internal class BoolibaDefaultConventions : ICustomization
     {
-        private readonly bool _addWorkReportWithCustomer;
+        private readonly bool _workReportWithCustomer;
 
-        public BoolibaDefaultConventions(bool addWorkReportWithCustomer) =>
-            _addWorkReportWithCustomer = addWorkReportWithCustomer;
+        public BoolibaDefaultConventions(bool workReportWithCustomer) =>
+            _workReportWithCustomer = workReportWithCustomer;
 
         public void Customize(IFixture fixture)
         {
             fixture.Customizations.Add(new DateOnlyBuilder());
-            if (!_addWorkReportWithCustomer)
+            if (!_workReportWithCustomer)
             {
-                fixture.Customizations.Add(new AddWorkReportWithoutCustomerBuilder());
+                fixture.Customizations.Add(new WorkReportWithoutCustomerBuilder());
             }
         }
     }
 
-    internal class AddWorkReportWithoutCustomerBuilder : ISpecimenBuilder
+    internal class WorkReportWithoutCustomerBuilder : ISpecimenBuilder
     {
         public object Create(object request, ISpecimenContext context)
         {
@@ -51,18 +51,25 @@ namespace Booliba.Tests.Fixtures
                 throw new ArgumentNullException(nameof(context));
             }
 
-            return IsNotAddWorkReportCommandRequest(request)
-                       ? new NoSpecimen()
-                       : new AddWorkReportCommand(
+            if (typeof(AddWorkReportCommand).GetTypeInfo().IsAssignableFrom(request as Type))
+            {
+                return new AddWorkReportCommand(
                            context.Create<Guid>(),
                            context.Create<string>(),
                            context.Create<DateOnly[]>(),
-                           default
-                        );
+                           default);
+            }
+            else if (typeof(SetWorkReportCustomerCommand).GetTypeInfo().IsAssignableFrom(request as Type))
+            {
+                return new SetWorkReportCustomerCommand(
+                           context.Create<Guid>(),
+                           default);
+            }
+            else
+            {
+                return new NoSpecimen();
+            }
         }
-
-        private static bool IsNotAddWorkReportCommandRequest(object request) =>
-            !typeof(AddWorkReportCommand).GetTypeInfo().IsAssignableFrom(request as Type);
     }
 
     internal class DateOnlyBuilder : ISpecimenBuilder

@@ -30,6 +30,7 @@ namespace Booliba.ApiTests
                 .WithDay(Some.DayInCurrentMonth)
                 .WithDay(Some.DayInCurrentMonth)
                 .WithName($"name-{Guid.NewGuid()}")
+                .WithCustomer(_context.CustomerId)
                 .Build();
         }
 
@@ -58,7 +59,8 @@ namespace Booliba.ApiTests
             var reports = await response.Content.ReadFromJsonAsync<WorkReportDto[]>(_context.JsonSerializerOptions);
             reports.Should().ContainEquivalentOf(new
             {
-                Id = _workReportId
+                Id = _workReportId,
+                CustomerId = _context.CustomerId ?? default(Guid?)
             });
         }
 
@@ -91,6 +93,22 @@ namespace Booliba.ApiTests
                 Content = JsonContent.Create(new
                 {
                     Days = new[] { day }
+                }, options: _context.JsonSerializerOptions)
+            };
+
+            using var response = await httpClient.SendAsync(httpRequest);
+            response.EnsureSuccessStatusCode();
+        }
+
+        [When(@"I set the customer of my work report")]
+        public async Task WhenISetTheCustomerOfMyWorkReport()
+        {
+            using var httpClient = new HttpClient { BaseAddress = _context.ApiBaseUri };
+            var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"workreports/{_workReportId}/customer")
+            {
+                Content = JsonContent.Create(new
+                {
+                    _context.CustomerId,
                 }, options: _context.JsonSerializerOptions)
             };
 
@@ -242,6 +260,19 @@ namespace Booliba.ApiTests
             {
                 throw new XunitException("Unable to validate the step within the given delay");
             }
+        }
+
+        [Then(@"I can see that the customer of my work report has been set")]
+        public async Task ThenICanSeeThatTheCustomerOfMyWorkReportHasBeenSet()
+        {
+            using var httpClient = new HttpClient { BaseAddress = _context.ApiBaseUri };
+            var httpRequest = new HttpRequestMessage(HttpMethod.Get, $"workreports/{_workReportId}");
+
+            using var response = await httpClient.SendAsync(httpRequest);
+            response.EnsureSuccessStatusCode();
+
+            var report = await response.Content.ReadFromJsonAsync<WorkReportDto>(_context.JsonSerializerOptions);
+            report!.CustomerId.Should().Be(_context.CustomerId);
         }
     }
 }

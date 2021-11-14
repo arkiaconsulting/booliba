@@ -15,6 +15,8 @@ namespace Booliba.ApiTests.Fixture
         public TestWorkReport? CurrentWorkReport { get; set; }
         public JsonSerializerOptions JsonSerializerOptions => _jsonSerializerOptions;
 
+        public Guid? CustomerId { get; private set; }
+
         private readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
@@ -30,7 +32,9 @@ namespace Booliba.ApiTests.Fixture
                 .Build();
             _jsonSerializerOptions.Converters.Add(new DateOnlyConverter());
         }
+
+        internal void SetCustomer(Guid customerId) => CustomerId = customerId;
     }
 
-    public record TestWorkReport(string Name, IEnumerable<DateOnly> Days);
+    public record TestWorkReport(string Name, IEnumerable<DateOnly> Days, Guid? CustomerId);
 }

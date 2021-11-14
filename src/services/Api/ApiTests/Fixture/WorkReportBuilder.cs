@@ -9,6 +9,7 @@ namespace Booliba.ApiTests.Fixture
     {
         private readonly ICollection<DateOnly> _days = new List<DateOnly>();
         private string _name = string.Empty;
+        private Guid? _customerId;
 
         public WorkReportBuilder WithDay(DateOnly day)
         {
@@ -24,6 +25,13 @@ namespace Booliba.ApiTests.Fixture
             return this;
         }
 
-        public TestWorkReport Build() => new(_name, _days);
+        internal WorkReportBuilder WithCustomer(Guid? customerId)
+        {
+            _customerId = customerId;
+
+            return this;
+        }
+
+        public TestWorkReport Build() => new(_name, _days, _customerId);
     }
 }

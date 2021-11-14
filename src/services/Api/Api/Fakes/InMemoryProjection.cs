@@ -74,7 +74,9 @@ namespace Booliba.Api.Fakes
         INotificationHandler<WorkReportRemovedNotification>,
         INotificationHandler<WorkReportSentNotification>,
         INotificationHandler<CustomerAddedNotification>,
-        INotificationHandler<CustomerRemovedNotification>
+        INotificationHandler<CustomerRemovedNotification>,
+        INotificationHandler<WorkReportCustomerSetNotification>,
+        INotificationHandler<WorkReportCustomerUnsetNotification>
     {
         private readonly ProjectionService _projectionService;
 
@@ -91,6 +93,7 @@ namespace Booliba.Api.Fakes
                 notification.Event.AggregateId,
                 notification.Event.WorkReportName,
                 notification.Event.Days.ToArray(),
+                notification.Event.CustomerId,
                 cancellationToken);
 
         Task INotificationHandler<DaysRemovedNotification>.Handle(DaysRemovedNotification notification, CancellationToken cancellationToken) =>
@@ -117,6 +120,18 @@ namespace Booliba.Api.Fakes
         Task INotificationHandler<CustomerRemovedNotification>.Handle(CustomerRemovedNotification notification, CancellationToken cancellationToken) =>
             _projectionService.RemoveCustomer(
                 notification.Event.AggregateId,
+                cancellationToken);
+
+        Task INotificationHandler<WorkReportCustomerSetNotification>.Handle(WorkReportCustomerSetNotification notification, CancellationToken cancellationToken) =>
+            _projectionService.SetCustomer(
+                notification.Event.AggregateId,
+                notification.Event.CustomerId,
+                cancellationToken);
+
+        Task INotificationHandler<WorkReportCustomerUnsetNotification>.Handle(WorkReportCustomerUnsetNotification notification, CancellationToken cancellationToken) =>
+            _projectionService.SetCustomer(
+                notification.Event.AggregateId,
+                default,
                 cancellationToken);
     }
 }

@@ -8,7 +8,8 @@ Content-Type: application/json
     "name": "name-{{$guid}}",
     "days": [
         "2021-12-31"
-    ]
+    ],
+    "customerId": "{{customerId}}"
 }
 
 ###
@@ -50,6 +51,16 @@ Content-Type: application/json
 
 ###
 
+
+POST {{base-address}}/workreports/{{id}}/customer HTTP/2.0
+Content-Type: application/json
+
+{
+    "customerId": "{{customerId}}"
+}
+
+###
+
 DELETE {{base-address}}/workreports/{{id}} HTTP/2.0
 
 ###
@@ -62,7 +73,7 @@ GET {{base-address}}/workreports HTTP/2.0
 
 ###
 
-@customerId = f8b7fcb0-98c9-4ab5-bcb7-45f4f354916b
+@customerId = a8b7fcb0-98c9-4ab5-bcb7-45f4f354916b
 
 # @name addCustomer
 POST {{base-address}}/customers/{{customerId}} HTTP/2.0
