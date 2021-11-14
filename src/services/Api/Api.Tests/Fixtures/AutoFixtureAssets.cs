@@ -3,6 +3,7 @@
 using AutoFixture;
 using AutoFixture.Kernel;
 using AutoFixture.Xunit2;
+using Booliba.ApplicationCore.WorkReports;
 using System;
 using System.Reflection;
 
@@ -10,23 +11,58 @@ namespace Booliba.Tests.Fixtures
 {
     internal class BoolibaInlineAutoDataAttribute : InlineAutoDataAttribute
     {
-        public BoolibaInlineAutoDataAttribute()
-            : base(new BoolibaAutoDataAttribute())
+        public BoolibaInlineAutoDataAttribute(bool addWorkReportWithCustomer = false)
+            : base(new BoolibaAutoDataAttribute(addWorkReportWithCustomer))
         {
         }
     }
 
     internal class BoolibaAutoDataAttribute : AutoDataAttribute
     {
-        public BoolibaAutoDataAttribute()
-            : base(() => new Fixture().Customize(new BoolibaConventions()))
+        public BoolibaAutoDataAttribute(bool addWorkReportWithCustomer = false)
+            : base(() => new Fixture().Customize(new BoolibaDefaultConventions(addWorkReportWithCustomer)))
         {
         }
     }
 
-    internal class BoolibaConventions : ICustomization
+    internal class BoolibaDefaultConventions : ICustomization
     {
-        public void Customize(IFixture fixture) => fixture.Customizations.Add(new DateOnlyBuilder());
+        private readonly bool _addWorkReportWithCustomer;
+
+        public BoolibaDefaultConventions(bool addWorkReportWithCustomer) =>
+            _addWorkReportWithCustomer = addWorkReportWithCustomer;
+
+        public void Customize(IFixture fixture)
+        {
+            fixture.Customizations.Add(new DateOnlyBuilder());
+            if (!_addWorkReportWithCustomer)
+            {
+                fixture.Customizations.Add(new AddWorkReportWithoutCustomerBuilder());
+            }
+        }
+    }
+
+    internal class AddWorkReportWithoutCustomerBuilder : ISpecimenBuilder
+    {
+        public object Create(object request, ISpecimenContext context)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return IsNotAddWorkReportCommandRequest(request)
+                       ? new NoSpecimen()
+                       : new AddWorkReportCommand(
+                           context.Create<Guid>(),
+                           context.Create<string>(),
+                           context.Create<DateOnly[]>(),
+                           default
+                        );
+        }
+
+        private static bool IsNotAddWorkReportCommandRequest(object request) =>
+            !typeof(AddWorkReportCommand).GetTypeInfo().IsAssignableFrom(request as Type);
     }
 
     internal class DateOnlyBuilder : ISpecimenBuilder

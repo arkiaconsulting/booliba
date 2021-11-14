@@ -32,7 +32,7 @@ namespace Booliba.Api.Controllers
             using var _ = _logger.BeginScope(new Dictionary<string, string> { { "WorkReportId", id.ToString() }, { "Endpoint", nameof(AddWorkReport) }, { "Side", "Command" } });
 
             await _mediator.Send(
-                new AddWorkReportCommand(id, request.Name, request.Days),
+                new AddWorkReportCommand(id, request.Name, request.Days, request.CustomerId),
                 cancellationToken
             );
 
@@ -150,7 +150,7 @@ namespace Booliba.Api.Controllers
         }
     }
 
-    public record AddWorkReportRequest(string Name, DateOnly[] Days);
+    public record AddWorkReportRequest(string Name, DateOnly[] Days, Guid CustomerId);
     public record AddWorkReportDaysRequest(DateOnly[] Days);
     public record RemoveWorkReportDaysRequest(DateOnly[] Days);
     public record SendWorkReportRequest(string[] EmailAddresses);

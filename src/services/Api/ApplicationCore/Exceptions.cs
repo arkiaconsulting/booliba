@@ -40,4 +40,12 @@ namespace Booliba.ApplicationCore
         {
         }
     }
+
+    public class CustomerNotFoundException : Exception
+    {
+        public CustomerNotFoundException()
+            : base()
+        {
+        }
+    }
 }

@@ -10,13 +10,14 @@ namespace Booliba.ApplicationCore.WorkReports
         private readonly HashSet<string> _sentToEmails = new();
         private string _name = string.Empty;
         private bool _removed;
+        private Guid? _customerId;
 
         private WorkReportAggregate(Guid id) : base(id) { }
 
-        public static WorkReportAggregate Create(Guid id, string name, IEnumerable<DateOnly> days)
+        public static WorkReportAggregate Create(Guid id, string name, IEnumerable<DateOnly> days, Guid? customerId)
         {
             var aggregate = new WorkReportAggregate(id);
-            var @event = new ReportAdded(id, name, days.Distinct());
+            var @event = new ReportAdded(id, name, days.Distinct(), customerId);
 
             aggregate.Apply(@event);
 
@@ -96,6 +97,7 @@ namespace Booliba.ApplicationCore.WorkReports
             {
                 _days.Add(day);
             }
+            _customerId = @event.CustomerId;
         }
 
         private void Apply(DaysAdded @event)
