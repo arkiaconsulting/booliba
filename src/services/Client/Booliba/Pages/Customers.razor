@@ -1,0 +1,40 @@
+﻿@page "/customers"
+
+@using Booliba.Data
+@using System.Globalization
+
+<div class="container-fluid">
+
+    <h1>My customers</h1>
+
+    @if (_customers == null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="basic-addon1">Customer Name</span>
+            </div>
+            <input type="text" class="form-control" @bind="_newCustomerName" placeholder="Name" aria-label="Name" aria-describedby="basic-addon1">
+            <button type="button" class="btn btn-primary btn-sm" @onclick="() => AddCustomer()" disabled="@(string.IsNullOrWhiteSpace(_newCustomerName))"><i class="fas fa-plus-circle"></i></button>
+        </div>
+
+        @foreach (var customer in _customers)
+        {
+            <div class="card">
+                <div class="card-header container-fluid">
+                    <div class="row">
+                        <div class="col-md-11">
+                            <span>@customer.Name</span>
+                        </div>
+                        <div class="col-md-1 float-right text-right">
+                            <button type="button" class="btn btn-warning btn-sm" @onclick="() => Remove(customer)"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
