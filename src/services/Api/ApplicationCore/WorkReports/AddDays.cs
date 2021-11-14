@@ -4,17 +4,17 @@ using Booliba.ApplicationCore.CoreDomain;
 using Booliba.ApplicationCore.Ports;
 using MediatR;
 
-namespace Booliba.ApplicationCore.RemoveDaysFromReport
+namespace Booliba.ApplicationCore.WorkReports
 {
-    public record RemoveDaysCommand(Guid WorkReportId, IEnumerable<DateOnly> DaysToRemove) : IRequest;
+    public record AddDaysCommand(Guid WorkReportId, IEnumerable<DateOnly> DaysToAdd) : IRequest;
 
-    internal class RemoveDaysCommandHandler : IRequestHandler<RemoveDaysCommand>
+    internal class AddDaysCommandHandler : IRequestHandler<AddDaysCommand>
     {
         private readonly IEventStore _eventStore;
 
-        public RemoveDaysCommandHandler(IEventStore eventStore) => _eventStore = eventStore;
+        public AddDaysCommandHandler(IEventStore eventStore) => _eventStore = eventStore;
 
-        async Task<Unit> IRequestHandler<RemoveDaysCommand, Unit>.Handle(RemoveDaysCommand request, CancellationToken cancellationToken)
+        async Task<Unit> IRequestHandler<AddDaysCommand, Unit>.Handle(AddDaysCommand request, CancellationToken cancellationToken)
         {
             var events = await _eventStore.Load(request.WorkReportId, cancellationToken);
             if (!events.Any())
@@ -23,11 +23,12 @@ namespace Booliba.ApplicationCore.RemoveDaysFromReport
             }
 
             var aggregate = AggregateRoot.ReHydrate<WorkReportAggregate>(request.WorkReportId, events);
-            aggregate.RemoveDays(request.DaysToRemove);
+            aggregate.AddDays(request.DaysToAdd);
 
             await _eventStore.Save(aggregate.PendingEvents, cancellationToken);
 
             return Unit.Value;
         }
     }
+    public record DaysAdded(Guid AggregateId, IEnumerable<DateOnly> Days) : DomainEvent(AggregateId);
 }

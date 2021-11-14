@@ -4,7 +4,7 @@ using Booliba.ApplicationCore.CoreDomain;
 using Booliba.ApplicationCore.Ports;
 using MediatR;
 
-namespace Booliba.ApplicationCore.SendReport
+namespace Booliba.ApplicationCore.WorkReports
 {
     public record SendWorkReportCommand(Guid WorkReportId, string[] EmailAddresses) : IRequest;
 
@@ -36,4 +36,8 @@ namespace Booliba.ApplicationCore.SendReport
             return Unit.Value;
         }
     }
+
+    public record EmailMessage(Guid WorkReportId, string[] EmailAddresses);
+
+    public record WorkReportSent(Guid AggregateId, string[] EmailAddresses) : DomainEvent(AggregateId);
 }

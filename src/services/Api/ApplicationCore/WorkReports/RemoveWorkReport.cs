@@ -4,15 +4,15 @@ using Booliba.ApplicationCore.CoreDomain;
 using Booliba.ApplicationCore.Ports;
 using MediatR;
 
-namespace Booliba.ApplicationCore.RemoveWorkReport
+namespace Booliba.ApplicationCore.WorkReports
 {
     public record RemoveWorkReportCommand(Guid WorkReportId) : IRequest;
 
-    internal class RemoveDaysCommandHandler : IRequestHandler<RemoveWorkReportCommand>
+    internal class RemoveWorkReportCommandHandler : IRequestHandler<RemoveWorkReportCommand>
     {
         private readonly IEventStore _eventStore;
 
-        public RemoveDaysCommandHandler(IEventStore eventStore) => _eventStore = eventStore;
+        public RemoveWorkReportCommandHandler(IEventStore eventStore) => _eventStore = eventStore;
 
         async Task<Unit> IRequestHandler<RemoveWorkReportCommand, Unit>.Handle(RemoveWorkReportCommand request, CancellationToken cancellationToken)
         {
@@ -29,4 +29,6 @@ namespace Booliba.ApplicationCore.RemoveWorkReport
             return Unit.Value;
         }
     }
+
+    public record WorkReportRemoved(Guid AggregateId) : DomainEvent(AggregateId);
 }

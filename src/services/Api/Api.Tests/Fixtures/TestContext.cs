@@ -1,12 +1,9 @@
 ﻿// This code is under Copyright (C) 2021 of Arkia Consulting SAS all right reserved
 
 using AutoFixture;
-using Booliba.ApplicationCore.AddReport;
 using Booliba.ApplicationCore.Customers;
 using Booliba.ApplicationCore.Ports;
-using Booliba.ApplicationCore.RemoveDaysFromReport;
-using Booliba.ApplicationCore.RemoveWorkReport;
-using Booliba.ApplicationCore.SendReport;
+using Booliba.ApplicationCore.WorkReports;
 using Booliba.QuerySide;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
