@@ -2,7 +2,7 @@
 
 using AutoFixture;
 using Booliba.ApplicationCore;
-using Booliba.ApplicationCore.SendReport;
+using Booliba.ApplicationCore.WorkReports;
 using Booliba.Tests.Fixtures;
 using FluentAssertions;
 using System;

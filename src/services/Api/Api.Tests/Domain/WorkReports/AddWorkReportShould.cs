@@ -1,6 +1,6 @@
 ﻿// This code is under Copyright (C) 2021 of Arkia Consulting SAS all right reserved
 
-using Booliba.ApplicationCore.AddReport;
+using Booliba.ApplicationCore.WorkReports;
 using Booliba.Tests.Fixtures;
 using FluentAssertions;
 using System;

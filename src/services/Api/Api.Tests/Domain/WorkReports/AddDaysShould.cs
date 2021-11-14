@@ -2,8 +2,7 @@
 
 using AutoFixture;
 using Booliba.ApplicationCore;
-using Booliba.ApplicationCore.AddDaysToReport;
-using Booliba.ApplicationCore.AddReport;
+using Booliba.ApplicationCore.WorkReports;
 using Booliba.Tests.Fixtures;
 using FluentAssertions;
 using System;

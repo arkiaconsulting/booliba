@@ -1,6 +1,6 @@
 ﻿// This code is under Copyright (C) 2021 of Arkia Consulting SAS all right reserved
 
-using Booliba.ApplicationCore.SendReport;
+using Booliba.ApplicationCore.WorkReports;
 
 namespace Booliba.ApplicationCore.Ports
 {

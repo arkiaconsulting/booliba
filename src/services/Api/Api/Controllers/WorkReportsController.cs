@@ -1,10 +1,6 @@
 ﻿// This code is under Copyright (C) 2021 of Arkia Consulting SAS all right reserved
 
-using Booliba.ApplicationCore.AddDaysToReport;
-using Booliba.ApplicationCore.AddReport;
-using Booliba.ApplicationCore.RemoveDaysFromReport;
-using Booliba.ApplicationCore.RemoveWorkReport;
-using Booliba.ApplicationCore.SendReport;
+using Booliba.ApplicationCore.WorkReports;
 using Booliba.QuerySide;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;

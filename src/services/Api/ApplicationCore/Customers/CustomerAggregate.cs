@@ -1,8 +1,8 @@
 ﻿// This code is under Copyright (C) 2021 of Arkia Consulting SAS all right reserved
 
-using Booliba.ApplicationCore.Customers;
+using Booliba.ApplicationCore.CoreDomain;
 
-namespace Booliba.ApplicationCore.CoreDomain
+namespace Booliba.ApplicationCore.Customers
 {
     internal class CustomerAggregate : AggregateRoot
     {

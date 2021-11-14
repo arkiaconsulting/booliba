@@ -1,6 +1,5 @@
 ﻿// This code is under Copyright (C) 2021 of Arkia Consulting SAS all right reserved
 
-using Booliba.ApplicationCore.CoreDomain;
 using Booliba.ApplicationCore.Ports;
 using MediatR;
 

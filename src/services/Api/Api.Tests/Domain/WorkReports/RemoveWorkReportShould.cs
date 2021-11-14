@@ -1,7 +1,7 @@
 ﻿// This code is under Copyright (C) 2021 of Arkia Consulting SAS all right reserved
 
 using AutoFixture;
-using Booliba.ApplicationCore.RemoveWorkReport;
+using Booliba.ApplicationCore.WorkReports;
 using Booliba.Tests.Fixtures;
 using FluentAssertions;
 using System;

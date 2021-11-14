@@ -1,10 +1,9 @@
 ﻿// This code is under Copyright (C) 2021 of Arkia Consulting SAS all right reserved
 
-using Booliba.ApplicationCore.CoreDomain;
 using Booliba.ApplicationCore.Ports;
 using MediatR;
 
-namespace Booliba.ApplicationCore.AddReport
+namespace Booliba.ApplicationCore.WorkReports
 {
     public record AddWorkReportCommand(Guid WorkReportId, string Name, IEnumerable<DateOnly> Days) : IRequest;
 
@@ -23,4 +22,5 @@ namespace Booliba.ApplicationCore.AddReport
             return Unit.Value;
         }
     }
+    public record ReportAdded(Guid AggregateId, string WorkReportName, IEnumerable<DateOnly> Days) : DomainEvent(AggregateId);
 }

@@ -1,7 +1,7 @@
 ﻿// This code is under Copyright (C) 2021 of Arkia Consulting SAS all right reserved
 
 using Booliba.ApplicationCore.Ports;
-using Booliba.ApplicationCore.SendReport;
+using Booliba.ApplicationCore.WorkReports;
 using Booliba.Tests.Fixtures;
 using System.Collections.Generic;
 using System.Threading;
