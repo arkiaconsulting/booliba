@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
 using System;
+using System.Text.Json;
 
 namespace Booliba
 {
@@ -26,6 +27,17 @@ namespace Booliba
             builder.Services.AddHttpClient<BoolibaService>(
                 httpClient => httpClient.BaseAddress = new Uri("https://booliba.azurewebsites.net/api/")
             );
+            builder.Services.AddSingleton(_ =>
+            {
+                var serializationOptions = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                };
+                serializationOptions.Converters.Add(new DateOnlyConverter());
+
+                return serializationOptions;
+            });
+
 
             return builder.Build();
         }

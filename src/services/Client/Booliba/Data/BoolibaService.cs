@@ -12,16 +12,23 @@ namespace Booliba.Data
 {
     public class BoolibaService
     {
-        private static readonly JsonSerializerOptions JsonSerializerOptions = new()
-        {
-            PropertyNameCaseInsensitive = true
-        };
         private readonly HttpClient _httpClient;
+        private readonly JsonSerializerOptions _serializerOptions;
 
-        public BoolibaService(HttpClient httpClient)
+        public BoolibaService(
+            HttpClient httpClient,
+            JsonSerializerOptions serializerOptions)
         {
-            JsonSerializerOptions.Converters.Add(new DateOnlyConverter());
             _httpClient = httpClient;
+            _serializerOptions = serializerOptions;
+        }
+
+        internal async Task RemoveCustomer(Guid id)
+        {
+            var httpRequest = new HttpRequestMessage(HttpMethod.Delete, $"customers/{id}");
+
+            using var response = await _httpClient.SendAsync(httpRequest);
+            response.EnsureSuccessStatusCode();
         }
 
         public async Task<WorkReport[]> GetWorkReports()
@@ -29,9 +36,33 @@ namespace Booliba.Data
             using var response = await _httpClient.GetAsync("workreports");
             response.EnsureSuccessStatusCode();
 
-            var workReports = await response.Content.ReadFromJsonAsync<WorkReport[]>(JsonSerializerOptions);
+            var workReports = await response.Content.ReadFromJsonAsync<WorkReport[]>(_serializerOptions);
 
             return workReports!;
+        }
+
+        internal async Task<Customer[]> GetCustomers()
+        {
+            using var response = await _httpClient.GetAsync("customers");
+            response.EnsureSuccessStatusCode();
+
+            var customers = await response.Content.ReadFromJsonAsync<Customer[]>(_serializerOptions);
+
+            return customers!;
+        }
+
+        internal async Task AddCustomer(Guid id, string name)
+        {
+            var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"customers/{id}")
+            {
+                Content = JsonContent.Create(new
+                {
+                    Name = name
+                }, options: _serializerOptions)
+            };
+
+            using var response = await _httpClient.SendAsync(httpRequest);
+            response.EnsureSuccessStatusCode();
         }
 
         public async Task AddDay(Guid workReportId, DateOnly day)
@@ -41,7 +72,7 @@ namespace Booliba.Data
                 Content = JsonContent.Create(new
                 {
                     Days = new[] { day }
-                }, options: JsonSerializerOptions)
+                }, options: _serializerOptions)
             };
 
             using var response = await _httpClient.SendAsync(httpRequest);
@@ -55,7 +86,7 @@ namespace Booliba.Data
                 Content = JsonContent.Create(new
                 {
                     Days = days
-                }, options: JsonSerializerOptions)
+                }, options: _serializerOptions)
             };
 
             using var response = await _httpClient.SendAsync(httpRequest);
@@ -69,7 +100,7 @@ namespace Booliba.Data
                 Content = JsonContent.Create(new
                 {
                     Days = new[] { day }
-                }, options: JsonSerializerOptions)
+                }, options: _serializerOptions)
             };
 
             using var response = await _httpClient.SendAsync(httpRequest);
@@ -83,7 +114,7 @@ namespace Booliba.Data
                 Content = JsonContent.Create(new
                 {
                     Days = days
-                }, options: JsonSerializerOptions)
+                }, options: _serializerOptions)
             };
 
             using var response = await _httpClient.SendAsync(httpRequest);
@@ -105,7 +136,7 @@ namespace Booliba.Data
                 Content = JsonContent.Create(new
                 {
                     EmailAddresses = emails
-                }, options: JsonSerializerOptions)
+                }, options: _serializerOptions)
             };
 
             using var response = await _httpClient.SendAsync(httpRequest);
@@ -120,7 +151,7 @@ namespace Booliba.Data
                 {
                     Name = name,
                     Days = days.ToArray()
-                }, options: JsonSerializerOptions)
+                }, options: _serializerOptions)
             };
 
             using var response = await _httpClient.SendAsync(httpRequest);
