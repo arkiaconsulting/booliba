@@ -12,6 +12,7 @@ namespace Booliba.ViewModels
     {
         public Guid Id { get; private set; }
         public string Name { get; private set; } = string.Empty;
+        public Customer? Customer { get; private set; }
         public IEnumerable<IGrouping<int, DateOnly>>? DaysPerYear { get; private set; } = default;
         public int TotalDayCount { get; private set; }
         public IEnumerable<string> Recipients => _recipients;
@@ -25,11 +26,13 @@ namespace Booliba.ViewModels
             Guid id,
             string name,
             IEnumerable<DateOnly> days,
-            IEnumerable<string> recipients)
+            IEnumerable<string> recipients,
+            Customer? customer)
         {
             _boolibaService = boolibaService;
             Id = id;
             Name = name;
+            Customer = customer;
             _days = days.ToHashSet();
             _recipients = new HashSet<string>(recipients);
             TotalDayCount = days.Count();
@@ -94,6 +97,13 @@ namespace Booliba.ViewModels
             }
 
             UpdateExposedDayGroup();
+        }
+
+        internal async Task SetCustomer(Customer customer)
+        {
+            await _boolibaService.SetWorkReportCustomer(Id, customer.Id);
+
+            Customer = customer;
         }
 
         public async Task Remove() =>
