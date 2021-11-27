@@ -107,6 +107,20 @@ namespace Booliba.Data
             response.EnsureSuccessStatusCode();
         }
 
+        internal async Task SetWorkReportCustomer(Guid workReportId, Guid customerId)
+        {
+            var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"workreports/{workReportId}/customer")
+            {
+                Content = JsonContent.Create(new
+                {
+                    CustomerId = customerId
+                }, options: _serializerOptions)
+            };
+
+            using var response = await _httpClient.SendAsync(httpRequest);
+            response.EnsureSuccessStatusCode();
+        }
+
         public async Task RemoveDays(Guid workReportId, DateOnly[] days)
         {
             var httpRequest = new HttpRequestMessage(HttpMethod.Delete, $"workreports/{workReportId}/days")

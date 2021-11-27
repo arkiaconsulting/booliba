@@ -4,5 +4,5 @@ using System;
 
 namespace Booliba.Data
 {
-    internal record Customer(Guid Id, string Name);
+    public record Customer(Guid Id, string Name);
 }

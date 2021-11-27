@@ -113,12 +113,21 @@
                 </div>
                 <div class="card-footer">
                     <div class="row">
-                        <div class="col-md-11">
+                        <div class="col-md-6">
                             @foreach (var recipient in workReport.Recipients)
                             {
                                 <a href="#" class="badge rounded-pill badge-primary" @onclick="() => workReport.RemoveRecipient(recipient)">@recipient</a>
                             }
                             <a href="#" class="badge rounded-pill badge-primary" @onclick="() => OpenAddRecipient(workReport)">+</a>
+                        </div>
+                        <div class="col-md-5">
+                            <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">@workReport.Customer?.Name</button>
+                                <div class="dropdown-menu">
+                                    @foreach (var customer in _customers!)
+                                    {
+                                        <a class="dropdown-item" href="#" @onclick="() => workReport.SetCustomer(customer)">@customer.Name</a>
+                                    }
+                                </div>
                         </div>
                         <div class="col-md-1 float-right text-right">
                             <button type="button" class="btn btn-primary btn-sm" @onclick="() => workReport.Send()" disabled="@(!workReport.Recipients.Any())"><i class="fas fa-paper-plane"></i></button>

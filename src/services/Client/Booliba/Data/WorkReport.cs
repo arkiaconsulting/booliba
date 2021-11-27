@@ -4,5 +4,5 @@ using System;
 
 namespace Booliba.Data
 {
-    public record WorkReport(Guid Id, string Name, DateOnly[] Days, string[] Recipients);
+    public record WorkReport(Guid Id, string Name, DateOnly[] Days, string[] Recipients, Guid? CustomerId);
 }
