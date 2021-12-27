@@ -21,6 +21,29 @@ provider "registry.terraform.io/adamcoulteroz/azurehelpers" {
   ]
 }
 
+provider "registry.terraform.io/arkiaconsulting/akcauth" {
+  version     = "1.0.1"
+  constraints = "~> 1.0"
+  hashes = [
+    "h1:dW4iAOXSZPsrYvzOqRjr4QYBG+gh1oQVOhARkHtzEd8=",
+    "zh:07250c2941cff24717bbca770c9ef930bff78ece61a41f0a7e67b343c635afab",
+    "zh:11be1905b079ba3796f5b688e2491df575c7ec0c0995ac19ca4e3a023d582585",
+    "zh:19dede1a3b8c16dd3cfc467a7f356610c0a2074a260e4e19116da59b7504a469",
+    "zh:26b980418e92bf326b73e5d2ea14bdc462ac97e1caf95f50233b3c27286fc265",
+    "zh:29a1d752a69283d9eaef1a1b2291454e3f4700c3adc473bba65d10342ef46b45",
+    "zh:33a67b09334b1194c5c6779abfc4adbc237fdee9ab8f44957f8c20d9cf562cce",
+    "zh:47aa4798af299d45e647d715055c11e98fa4477b0e5e2140777004fe7f951b85",
+    "zh:6ac61e6ab5b26246efd343c3db405015be0eb9bf462aae9d90879a39fa6303f2",
+    "zh:7045be831b7c0f32495f714c7bda778258280c68c19e021fe65110617474319c",
+    "zh:ad6564a2f4755970271edfcf2ff2fe1870c3658b8dc312c1c77ae6baac2d31e6",
+    "zh:b9620f2befbf03dcaabf41b3a19283bf3ebd523542aeefa8789d077be93c2f83",
+    "zh:bc5f8c0c521362b085d8f6d99f457563a0861fcfa247ddc062a7c29105a7fe5f",
+    "zh:d7a63953656d11f4f357c5b7a9580bf32adc6910f6477ec32d2b307a11add067",
+    "zh:dc20d5b65ddfc5bec50d5ec5d6e8f8f06d35d581115367eeea3e68a0df8e149b",
+    "zh:f2be584b0f83b304e8a712dd1aef51531b38061e9960867ff80c0c0c90083357",
+  ]
+}
+
 provider "registry.terraform.io/hashicorp/azurerm" {
   version     = "2.80.0"
   constraints = "2.80.0"

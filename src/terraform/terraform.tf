@@ -1,5 +1,5 @@
 terraform {
-  required_version = "~> 1.0.0"
+  required_version = "~> 1.1.0"
   backend "azurerm" {}
 
   required_providers {
@@ -11,6 +11,11 @@ terraform {
     azurehelpers = {
       source = "AdamCoulterOz/azurehelpers"
     }
+
+    akcauth = {
+      version = "~>1.0"
+      source  = "arkiaconsulting/akcauth"
+    }
   }
 }
 
@@ -21,4 +26,9 @@ provider "azurerm" {
 }
 
 provider "azurehelpers" {
+}
+
+provider "akcauth" {
+  server_url = "https://auth.arkia.dev"
+  azuread_audience = "api://arkia-identity"
 }
