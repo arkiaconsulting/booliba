@@ -3,12 +3,14 @@
 using Booliba.ApplicationCore.Customers;
 using Booliba.QuerySide;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Booliba.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = "oauth")]
     public class CustomersController : ControllerBase
     {
         private readonly IMediator _mediator;

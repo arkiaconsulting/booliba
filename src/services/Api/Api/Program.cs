@@ -22,6 +22,16 @@ builder.Services
     .AddQuerySide()
     .AddInMemoryProjection();
 
+builder.Services.AddAuthentication()
+    .AddJwtBearer("oauth", "AKC Auth", options =>
+    {
+        options.Audience = "booliba";
+        options.TokenValidationParameters.ValidateIssuer = true;
+        options.TokenValidationParameters.ValidateIssuerSigningKey = true;
+        options.TokenValidationParameters.ValidIssuer = "https://auth.arkia.dev";
+        options.TokenValidationParameters.ValidateAudience = true;
+    });
+
 builder.Services.AddQuerySide();
 builder.Services.AddApplicationInsightsTelemetry();
 
