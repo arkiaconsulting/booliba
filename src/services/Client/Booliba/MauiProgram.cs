@@ -38,7 +38,6 @@ namespace Booliba
                 return serializationOptions;
             });
 
-
             return builder.Build();
         }
     }

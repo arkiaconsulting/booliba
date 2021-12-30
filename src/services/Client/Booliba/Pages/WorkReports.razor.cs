@@ -13,6 +13,9 @@ namespace Booliba.Pages
     public partial class WorkReports
     {
         [Inject]
+        public NavigationManager? NavigationManager { get; set; }
+
+        [Inject]
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         private BoolibaService BoolibaService { get; set; }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
@@ -29,6 +32,9 @@ namespace Booliba.Pages
 
         protected override async Task OnInitializedAsync()
         {
+            //var authService = new AuthService(NavigationManager!);
+            //var accessToken = await authService.Login();
+
             _customers = new List<Customer>(await BoolibaService.GetCustomers());
 
             _workReports = (await BoolibaService.GetWorkReports())
